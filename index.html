@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RIVALS — Community Leaderboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0f;
+  --surface: #141416;
+  --surface2: #1a1a1e;
+  --surface3: #202026;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
+  --text: #e8e8ec;
+  --muted: #666678;
+  --muted2: #888898;
+  --c-archnemesis: #ff2d55;
+  --c-nemesis: #c8f000;
+  --c-diamond: #00d4ff;
+  --c-platinum: #b8d4ff;
+  --c-gold: #ffd700;
+  --c-silver: #c0c8d8;
+  --c-bronze: #cd7f32;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; font-size:14px; }
+
+nav {
+  height:56px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px; background:var(--surface); border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:100;
+}
+.logo { display:flex; align-items:center; gap:10px; }
+.logo-icon { width:28px;height:28px;background:var(--c-archnemesis);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff; }
+.logo-text { font-weight:800;font-size:15px;letter-spacing:-0.3px; }
+.logo-sub { font-size:12px;color:var(--muted);border-left:1px solid var(--border2);padding-left:10px;margin-left:2px; }
+.nav-right { display:flex;gap:6px; }
+.nav-btn { padding:6px 14px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted2);font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s; }
+.nav-btn:hover,.nav-btn.active { background:var(--surface3);color:var(--text); }
+.nav-btn.primary { background:var(--c-archnemesis);color:#fff;border-color:transparent;font-weight:600; }
+.nav-btn.primary:hover { opacity:.85; }
+
+.view { display:none; }
+.view.active { display:block; }
+
+/* PUBLIC */
+.pub-wrap { max-width:1100px;margin:0 auto;padding:32px 24px 60px; }
+.page-header { display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap; }
+.page-title h1 { font-size:26px;font-weight:800;letter-spacing:-0.6px; }
+.page-title p { font-size:13px;color:var(--muted);margin-top:3px; }
+.season-pill { background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--muted2); }
+.season-pill span { color:var(--text); }
+
+.tab-row { display:flex;gap:0;margin-bottom:28px;border-bottom:1px solid var(--border); }
+.tab { padding:8px 18px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;margin-bottom:-1px;text-transform:capitalize; }
+.tab:hover { color:var(--text); }
+.tab.active { color:var(--text);border-bottom-color:var(--c-archnemesis);font-weight:600; }
+
+.tier-section { margin-bottom:36px; }
+.tier-header { display:flex;align-items:center;gap:10px;margin-bottom:14px; }
+.tier-dot { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
+.tier-name { font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase; }
+.tier-count { font-size:12px;color:var(--muted); }
+.tier-divider { flex:1;height:1px;background:var(--border); }
+
+.players-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:10px; }
+
+.player-card {
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;
+  transition:border-color .15s,background .15s;position:relative;overflow:hidden;
+}
+.player-card:hover { border-color:var(--border2);background:var(--surface2); }
+.player-card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px; }
+
+.ts-archnemesis .player-card::before { background:var(--c-archnemesis); }
+.ts-nemesis .player-card::before { background:var(--c-nemesis); }
+.ts-diamond .player-card::before { background:var(--c-diamond); }
+.ts-platinum .player-card::before { background:var(--c-platinum); }
+.ts-gold .player-card::before { background:var(--c-gold); }
+.ts-silver .player-card::before { background:var(--c-silver); }
+.ts-bronze .player-card::before { background:var(--c-bronze); }
+
+.rank-num { position:absolute;top:10px;right:11px;font-size:11px;font-weight:700;color:var(--muted); }
+
+.card-avatar {
+  width:70px;height:70px;border-radius:50%;background:var(--surface3);
+  border:2px solid var(--border2);overflow:hidden;display:flex;align-items:center;
+  justify-content:center;font-size:22px;font-weight:800;flex-shrink:0;
+}
+.card-avatar img { width:100%;height:100%;object-fit:cover; }
+
+.card-name { font-size:14px;font-weight:700;letter-spacing:-.2px;text-align:center; }
+
+.tier-badge { font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:20px; }
+
+.bg-archnemesis { background:rgba(255,45,85,.14);color:var(--c-archnemesis); }
+.bg-nemesis { background:rgba(200,240,0,.1);color:var(--c-nemesis); }
+.bg-diamond { background:rgba(0,212,255,.1);color:var(--c-diamond); }
+.bg-platinum { background:rgba(184,212,255,.1);color:var(--c-platinum); }
+.bg-gold { background:rgba(255,215,0,.1);color:var(--c-gold); }
+.bg-silver { background:rgba(192,200,216,.1);color:var(--c-silver); }
+.bg-bronze { background:rgba(205,127,50,.1);color:var(--c-bronze); }
+
+.tc-archnemesis { color:var(--c-archnemesis); }
+.tc-nemesis { color:var(--c-nemesis); }
+.tc-diamond { color:var(--c-diamond); }
+.tc-platinum { color:var(--c-platinum); }
+.tc-gold { color:var(--c-gold); }
+.tc-silver { color:var(--c-silver); }
+.tc-bronze { color:var(--c-bronze); }
+
+.card-stats { display:flex;gap:10px;width:100%; }
+.card-stat { flex:1;text-align:center; }
+.stat-val { font-size:15px;font-weight:700;line-height:1; }
+.stat-lbl { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px; }
+
+.empty-state { text-align:center;padding:60px 20px;color:var(--muted);font-size:14px; }
+
+/* LOGIN */
+.login-wrap { display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 56px);padding:24px; }
+.login-card { background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:32px;width:100%;max-width:340px; }
+.login-card h2 { font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px; }
+.login-card .sub { font-size:13px;color:var(--muted);margin-bottom:24px; }
+
+.fg { margin-bottom:14px; }
+.fg label { display:block;font-size:11px;font-weight:700;color:var(--muted2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em; }
+
+input[type=text],input[type=password],input[type=number],select {
+  width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;
+  padding:9px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .15s;
+}
+input:focus,select:focus { border-color:rgba(255,45,85,.5); }
+select option { background:var(--surface2); }
+
+.btn-prim { width:100%;background:var(--c-archnemesis);color:#fff;border:none;border-radius:7px;padding:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s; }
+.btn-prim:hover { opacity:.85; }
+.err-msg { color:#ff6b6b;font-size:12px;margin-top:10px;display:none; }
+
+/* ADMIN */
+.adm-wrap { max-width:960px;margin:0 auto;padding:28px 24px 60px; }
+.adm-section { background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:20px; }
+.adm-section-title { font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px; }
+.adm-top { display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px; }
+.adm-top h2 { font-size:20px;font-weight:800;letter-spacing:-.4px; }
+.btn-row { display:flex;gap:8px; }
+
+.btn-sm { padding:7px 16px;border-radius:7px;border:1px solid var(--border2);background:transparent;color:var(--muted2);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s; }
+.btn-sm:hover { color:var(--text);background:var(--surface2); }
+.btn-sm.ac { background:var(--c-archnemesis);color:#fff;border-color:transparent; }
+.btn-sm.ac:hover { opacity:.85; }
+
+.atbl { width:100%;border-collapse:collapse; }
+.atbl th { font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:0 12px 10px;text-align:left;border-bottom:1px solid var(--border); }
+.atbl td { padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle; }
+.atbl tr:last-child td { border-bottom:none; }
+.atbl tr:hover td { background:rgba(255,255,255,.015); }
+
+.atbl-av { width:32px;height:32px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--muted2); }
+.atbl-av img { width:100%;height:100%;object-fit:cover; }
+.pcell { display:flex;align-items:center;gap:10px; }
+
+.btn-ed { padding:4px 10px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--c-diamond);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .12s; }
+.btn-ed:hover { background:rgba(0,212,255,.08); }
+.btn-dl { padding:4px 10px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:#ff6b6b;font-size:11px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .12s; }
+.btn-dl:hover { background:rgba(255,107,107,.08); }
+
+/* MODAL */
+.overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px); }
+.overlay.open { display:flex; }
+.modal { background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:24px;width:100%;max-width:460px;max-height:92vh;overflow-y:auto; }
+.modal h3 { font-size:17px;font-weight:800;letter-spacing:-.3px;margin-bottom:20px; }
+.frow { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.modal-foot { display:flex;justify-content:flex-end;gap:8px;margin-top:20px; }
+.btn-cancel { padding:9px 20px;border-radius:7px;border:1px solid var(--border2);background:transparent;color:var(--muted2);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer; }
+.btn-save { padding:9px 24px;border-radius:7px;border:none;background:var(--c-archnemesis);color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s; }
+.btn-save:hover { opacity:.85; }
+
+/* Avatar section in modal */
+.av-row { display:flex;align-items:center;gap:16px;padding:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px; }
+.av-preview { width:60px;height:60px;border-radius:50%;background:var(--surface3);border:2px solid var(--border2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--muted);flex-shrink:0; }
+.av-preview img { width:100%;height:100%;object-fit:cover; }
+.av-controls { flex:1;display:flex;flex-direction:column;gap:8px; }
+.av-status { font-size:12px;color:var(--muted); }
+.av-status.ok { color:#4ade80; }
+.av-status.err { color:#ff6b6b; }
+.av-status.loading { color:var(--c-diamond); }
+.av-btn-row { display:flex;gap:6px; }
+.btn-fetch { padding:6px 12px;border-radius:6px;background:var(--c-archnemesis);color:#fff;border:none;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s; }
+.btn-fetch:hover { opacity:.85; }
+.btn-fetch:disabled { opacity:.4;cursor:not-allowed; }
+.btn-upload-lbl { padding:6px 12px;border-radius:6px;border:1px solid var(--border2);color:var(--muted2);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-block; }
+.btn-upload-lbl:hover { color:var(--text);background:var(--surface3); }
+
+.toast { position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;color:var(--text);z-index:999;opacity:0;transform:translateY(6px);transition:all .2s;pointer-events:none; }
+.toast.show { opacity:1;transform:translateY(0); }
+
+/* Worker config banner */
+.config-banner { background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;display:flex;align-items:flex-start;gap:10px; }
+.config-banner .icon { font-size:16px;flex-shrink:0;margin-top:1px; }
+.config-banner p { color:var(--muted2);line-height:1.5; }
+.config-banner strong { color:var(--c-gold); }
+.config-banner code { background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px;color:var(--text); }
+
+@media(max-width:600px){
+  .players-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+  .adm-wrap,.pub-wrap{padding:16px 14px 40px;}
+  .frow{grid-template-columns:1fr;}
+  .logo-sub{display:none;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">R</div>
+    <div class="logo-text">RIVALS</div>
+    <div class="logo-sub">Community Leaderboard</div>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn active" id="nav-lb" onclick="showView('public')">Leaderboard</button>
+    <button class="nav-btn primary" id="nav-adm" onclick="showAdminOrLogin()">Admin</button>
+  </div>
+</nav>
+
+<!-- PUBLIC -->
+<div id="view-public" class="view active">
+  <div class="pub-wrap">
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Player Rankings</h1>
+        <p>Community-curated Roblox Rivals leaderboard</p>
+      </div>
+      <div class="season-pill">Season: <span id="pub-season">—</span></div>
+    </div>
+    <div class="tab-row" id="pub-tabs"></div>
+    <div id="pub-content"></div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="view-login" class="view">
+  <div class="login-wrap">
+    <div class="login-card">
+      <h2>Admin Access</h2>
+      <p class="sub">Sign in to manage leaderboard entries</p>
+      <div class="fg">
+        <label>Password</label>
+        <input type="password" id="login-pw" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn-prim" onclick="doLogin()">Sign In</button>
+      <div class="err-msg" id="login-err">Incorrect password.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="view-admin" class="view">
+  <div class="adm-wrap">
+    <div class="adm-top">
+      <h2>Manage Players</h2>
+      <div class="btn-row">
+        <button class="btn-sm" onclick="showView('settings')">Settings</button>
+        <button class="btn-sm" onclick="doLogout()">Log out</button>
+        <button class="btn-sm ac" onclick="openModal()">+ Add player</button>
+      </div>
+    </div>
+
+    <div id="worker-banner" class="config-banner" style="display:none">
+      <div class="icon">⚠</div>
+      <p><strong>Worker URL not configured.</strong> Auto-fetch avatars won't work until you set your Cloudflare Worker URL in <strong>Settings</strong>. You can still add players and upload avatars manually.</p>
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-title">Player Entries</div>
+      <div style="overflow-x:auto">
+        <table class="atbl">
+          <thead><tr>
+            <th>Player</th><th>Category</th><th>Tier</th>
+            <th>ELO</th><th>Wins</th><th>W/R</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="adm-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="view-settings" class="view">
+  <div class="adm-wrap">
+    <div class="adm-top">
+      <h2>Settings</h2>
+      <div class="btn-row">
+        <button class="btn-sm" onclick="showView('admin')">← Back</button>
+      </div>
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-title">Site</div>
+      <div class="fg">
+        <label>Current Season</label>
+        <input type="text" id="set-season" placeholder="e.g. Season 3">
+      </div>
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-title">Cloudflare Worker URL</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+        Paste your deployed Worker URL here (e.g. <code style="background:var(--surface3);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px">https://rivals-proxy.yourname.workers.dev</code>).
+        Once set, typing a username in the Add Player form will automatically fetch their Roblox avatar.
+      </p>
+      <div class="fg">
+        <label>Worker URL</label>
+        <input type="text" id="set-worker" placeholder="https://rivals-proxy.yourname.workers.dev">
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:-6px">Leave blank to disable auto-fetch (manual upload still works).</p>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn-sm ac" onclick="saveSettings()">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modal-ov">
+  <div class="modal">
+    <h3 id="modal-ttl">Add Player</h3>
+    <input type="hidden" id="edit-id">
+
+    <!-- Avatar section -->
+    <div class="fg">
+      <label>Avatar</label>
+      <div class="av-row">
+        <div class="av-preview" id="av-prev"><span id="av-init">?</span></div>
+        <div class="av-controls">
+          <div class="av-status" id="av-status">No avatar set</div>
+          <div class="av-btn-row">
+            <button class="btn-fetch" id="btn-fetch-av" onclick="fetchAvatar()" title="Auto-fetch from Roblox">
+              Fetch from Roblox
+            </button>
+            <label class="btn-upload-lbl" title="Upload manually">
+              Upload
+              <input type="file" accept="image/*" id="av-file" style="display:none" onchange="fileAvatar(this)">
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>Roblox Username</label>
+      <input type="text" id="f-user" placeholder="e.g. ProRivalsPlayer" oninput="onUsernameInput()">
+    </div>
+
+    <div class="frow">
+      <div class="fg">
+        <label>Category</label>
+        <select id="f-cat">
+          <option value="ranked">Ranked</option>
+          <option value="overall">Overall</option>
+          <option value="seasonal">Seasonal</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Tier</label>
+        <select id="f-tier">
+          <option value="Archnemesis">Archnemesis</option>
+          <option value="Nemesis">Nemesis</option>
+          <option value="Diamond">Diamond</option>
+          <option value="Platinum">Platinum</option>
+          <option value="Gold" selected>Gold</option>
+          <option value="Silver">Silver</option>
+          <option value="Bronze">Bronze</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="fg">
+        <label>ELO</label>
+        <input type="number" id="f-elo" placeholder="e.g. 3200" min="0">
+      </div>
+      <div class="fg">
+        <label>Wins</label>
+        <input type="number" id="f-wins" placeholder="e.g. 500" min="0">
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="fg">
+        <label>Win Rate (%)</label>
+        <input type="number" id="f-wr" placeholder="e.g. 72" min="0" max="100">
+      </div>
+      <div class="fg">
+        <label>Note (optional)</label>
+        <input type="text" id="f-note" placeholder="e.g. Top Fragger">
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="savePlayer()">Save Player</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG — change these if you want
+// ─────────────────────────────────────────────
+const PASS = 'rivals2024';
+const KEY  = 'rivals_v3';
+const TIERS = ['Archnemesis','Nemesis','Diamond','Platinum','Gold','Silver','Bronze'];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let S = { season:'Season 1', players:[], activeCategory:'ranked', workerUrl:'' };
+let pendingAv = null;
+let fetchDebounce = null;
+
+function load() {
+  try { const r = localStorage.getItem(KEY); if (r) S = JSON.parse(r); } catch(e) {}
+  S.players        = S.players        || [];
+  S.season         = S.season         || 'Season 1';
+  S.activeCategory = S.activeCategory || 'ranked';
+  S.workerUrl      = S.workerUrl      || '';
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(S)); }
+
+// ─────────────────────────────────────────────
+// VIEWS
+// ─────────────────────────────────────────────
+function showView(v) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.getElementById('nav-lb').classList.toggle('active', v === 'public');
+  if (v === 'public')   renderPublic();
+  if (v === 'admin')    renderAdmin();
+  if (v === 'settings') renderSettings();
+}
+
+function showAdminOrLogin() {
+  sessionStorage.getItem('rivals_adm') === '1' ? showView('admin') : showView('login');
+}
+
+// ─────────────────────────────────────────────
+// LOGIN
+// ─────────────────────────────────────────────
+function doLogin() {
+  if (document.getElementById('login-pw').value === PASS) {
+    sessionStorage.setItem('rivals_adm', '1');
+    document.getElementById('login-pw').value = '';
+    document.getElementById('login-err').style.display = 'none';
+    showView('admin');
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+
+function doLogout() { sessionStorage.removeItem('rivals_adm'); showView('public'); }
+
+// ─────────────────────────────────────────────
+// PUBLIC RENDER
+// ─────────────────────────────────────────────
+function tc(t) {
+  return ({Archnemesis:'archnemesis',Nemesis:'nemesis',Diamond:'diamond',
+           Platinum:'platinum',Gold:'gold',Silver:'silver',Bronze:'bronze'})[t] || 'bronze';
+}
+function tdot(t) {
+  return ({Archnemesis:'var(--c-archnemesis)',Nemesis:'var(--c-nemesis)',
+           Diamond:'var(--c-diamond)',Platinum:'var(--c-platinum)',
+           Gold:'var(--c-gold)',Silver:'var(--c-silver)',Bronze:'var(--c-bronze)'})[t] || 'var(--c-bronze)';
+}
+
+function getCats() {
+  const c = [...new Set(S.players.map(p => p.category))];
+  return c.length ? c : ['ranked'];
+}
+
+function renderPublic() {
+  document.getElementById('pub-season').textContent = S.season;
+  const cats = getCats();
+  if (!cats.includes(S.activeCategory)) S.activeCategory = cats[0];
+
+  document.getElementById('pub-tabs').innerHTML = cats.map(c =>
+    `<button class="tab${c === S.activeCategory ? ' active' : ''}" onclick="setCat('${c}')">${c.charAt(0).toUpperCase()+c.slice(1)}</button>`
+  ).join('');
+
+  const filtered = S.players.filter(p => p.category === S.activeCategory);
+  if (!filtered.length) {
+    document.getElementById('pub-content').innerHTML = '<div class="empty-state">No players in this category yet. Check back soon.</div>';
+    return;
+  }
+
+  const groups = {};
+  TIERS.forEach(t => { groups[t] = []; });
+  filtered.forEach(p => { (groups[p.tier] || groups['Bronze']).push(p); });
+  TIERS.forEach(t => groups[t].sort((a,b) => (b.elo||0) - (a.elo||0)));
+
+  const byElo = [...filtered].sort((a,b) => (b.elo||0) - (a.elo||0));
+  const rankMap = {};
+  byElo.forEach((p,i) => rankMap[p.id] = i+1);
+
+  let html = '';
+  TIERS.forEach(tier => {
+    const players = groups[tier];
+    if (!players.length) return;
+    const cls = tc(tier), dot = tdot(tier);
+    html += `<div class="tier-section ts-${cls}">
+      <div class="tier-header">
+        <div class="tier-dot" style="background:${dot}"></div>
+        <div class="tier-name tc-${cls}">${tier}</div>
+        <div class="tier-count">${players.length} player${players.length !== 1 ? 's' : ''}</div>
+        <div class="tier-divider"></div>
+      </div>
+      <div class="players-grid">
+        ${players.map(p => {
+          const init = (p.username||'??').slice(0,2).toUpperCase();
+          const avEl = p.avatar ? `<img src="${p.avatar}" alt="">` : `<span>${init}</span>`;
+          return `<div class="player-card">
+            <div class="rank-num">#${rankMap[p.id]||'—'}</div>
+            <div class="card-avatar">${avEl}</div>
+            <div class="card-name">${esc(p.username)}</div>
+            <span class="tier-badge bg-${cls}">${tier}</span>
+            <div class="card-stats">
+              <div class="card-stat"><div class="stat-val">${p.elo?p.elo.toLocaleString():'—'}</div><div class="stat-lbl">ELO</div></div>
+              <div class="card-stat"><div class="stat-val">${p.wins?p.wins.toLocaleString():'—'}</div><div class="stat-lbl">Wins</div></div>
+              <div class="card-stat"><div class="stat-val">${p.winrate!=null?p.winrate+'%':'—'}</div><div class="stat-lbl">W/R</div></div>
+            </div>
+            ${p.note ? `<div style="font-size:11px;color:var(--muted);text-align:center">${esc(p.note)}</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+  document.getElementById('pub-content').innerHTML = html;
+}
+
+function setCat(c) { S.activeCategory = c; renderPublic(); }
+
+// ─────────────────────────────────────────────
+// ADMIN RENDER
+// ─────────────────────────────────────────────
+function renderAdmin() {
+  const banner = document.getElementById('worker-banner');
+  banner.style.display = S.workerUrl ? 'none' : 'flex';
+
+  const tb = document.getElementById('adm-tbody');
+  if (!S.players.length) {
+    tb.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px">No players yet. Click "+ Add player" to get started.</td></tr>`;
+    return;
+  }
+  const sorted = [...S.players].sort((a,b) => {
+    const ta = TIERS.indexOf(a.tier), tb2 = TIERS.indexOf(b.tier);
+    if (ta !== tb2) return ta - tb2;
+    return (b.elo||0) - (a.elo||0);
+  });
+  tb.innerHTML = sorted.map(p => {
+    const cls = tc(p.tier);
+    const init = (p.username||'??').slice(0,2).toUpperCase();
+    const avEl = p.avatar ? `<img src="${p.avatar}">` : init;
+    return `<tr>
+      <td><div class="pcell"><div class="atbl-av">${avEl}</div><strong>${esc(p.username)}</strong></div></td>
+      <td style="color:var(--muted)">${p.category}</td>
+      <td><span class="tier-badge bg-${cls}" style="font-size:11px">${p.tier}</span></td>
+      <td style="font-weight:700">${p.elo ? p.elo.toLocaleString() : '—'}</td>
+      <td>${p.wins ? p.wins.toLocaleString() : '—'}</td>
+      <td>${p.winrate != null ? p.winrate + '%' : '—'}</td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn-ed" onclick="openModal('${p.id}')">Edit</button>
+        <button class="btn-dl" onclick="delPlayer('${p.id}')">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+// SETTINGS
+// ─────────────────────────────────────────────
+function renderSettings() {
+  document.getElementById('set-season').value = S.season;
+  document.getElementById('set-worker').value = S.workerUrl;
+}
+
+function saveSettings() {
+  S.season    = document.getElementById('set-season').value || 'Season 1';
+  S.workerUrl = document.getElementById('set-worker').value.trim().replace(/\/$/, '');
+  save();
+  toast('Settings saved');
+  showView('admin');
+}
+
+// ─────────────────────────────────────────────
+// MODAL
+// ─────────────────────────────────────────────
+function openModal(id) {
+  pendingAv = null;
+  document.getElementById('modal-ov').classList.add('open');
+  document.getElementById('edit-id').value = id || '';
+
+  // Show/hide fetch button based on whether worker is configured
+  document.getElementById('btn-fetch-av').style.display = S.workerUrl ? 'inline-block' : 'none';
+
+  if (id) {
+    const p = S.players.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('modal-ttl').textContent = 'Edit Player';
+    document.getElementById('f-user').value  = p.username || '';
+    document.getElementById('f-cat').value   = p.category || 'ranked';
+    document.getElementById('f-tier').value  = p.tier || 'Gold';
+    document.getElementById('f-elo').value   = p.elo || '';
+    document.getElementById('f-wins').value  = p.wins || '';
+    document.getElementById('f-wr').value    = p.winrate != null ? p.winrate : '';
+    document.getElementById('f-note').value  = p.note || '';
+    if (p.avatar) { pendingAv = p.avatar; setAvPreview(p.avatar); setAvStatus('Saved avatar', 'ok'); }
+    else resetAvPreview(p.username);
+  } else {
+    document.getElementById('modal-ttl').textContent = 'Add Player';
+    ['f-user','f-elo','f-wins','f-wr','f-note'].forEach(i => document.getElementById(i).value = '');
+    document.getElementById('f-cat').value  = 'ranked';
+    document.getElementById('f-tier').value = 'Gold';
+    resetAvPreview('');
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal-ov').classList.remove('open');
+  pendingAv = null;
+  clearTimeout(fetchDebounce);
+}
+document.getElementById('modal-ov').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+function savePlayer() {
+  const username = document.getElementById('f-user').value.trim();
+  if (!username) { alert('Username is required.'); return; }
+  const id = document.getElementById('edit-id').value;
+  const p = {
+    id:       id || Date.now().toString(),
+    username,
+    category: document.getElementById('f-cat').value,
+    tier:     document.getElementById('f-tier').value,
+    elo:      parseInt(document.getElementById('f-elo').value) || null,
+    wins:     parseInt(document.getElementById('f-wins').value) || null,
+    winrate:  document.getElementById('f-wr').value !== '' ? parseFloat(document.getElementById('f-wr').value) : null,
+    note:     document.getElementById('f-note').value.trim(),
+    avatar:   pendingAv || null,
+  };
+  if (id) { const i = S.players.findIndex(x => x.id === id); if (i > -1) S.players[i] = p; }
+  else S.players.push(p);
+  save(); closeModal(); renderAdmin();
+  toast(id ? 'Player updated' : 'Player added');
+}
+
+function delPlayer(id) {
+  if (!confirm('Delete this player?')) return;
+  S.players = S.players.filter(p => p.id !== id);
+  save(); renderAdmin(); toast('Player deleted');
+}
+
+// ─────────────────────────────────────────────
+// AVATAR — AUTO FETCH via Cloudflare Worker
+// ─────────────────────────────────────────────
+
+// Called when the username field changes — debounced auto-fetch
+function onUsernameInput() {
+  const u = document.getElementById('f-user').value.trim();
+
+  // Update initials preview if no custom avatar yet
+  if (!pendingAv) {
+    document.getElementById('av-prev').innerHTML = `<span>${u ? u.slice(0,2).toUpperCase() : '?'}</span>`;
+  }
+
+  // Auto-fetch if worker configured and username looks real (>2 chars)
+  if (!S.workerUrl || u.length < 3) return;
+  clearTimeout(fetchDebounce);
+  fetchDebounce = setTimeout(() => fetchAvatar(u), 800);
+}
+
+// Triggered by button OR auto-debounce
+async function fetchAvatar(usernameOverride) {
+  const username = usernameOverride || document.getElementById('f-user').value.trim();
+  if (!username) { toast('Enter a username first'); return; }
+  if (!S.workerUrl) { toast('Worker URL not set — go to Settings'); return; }
+
+  setAvStatus('Fetching…', 'loading');
+  document.getElementById('btn-fetch-av').disabled = true;
+
+  try {
+    // Step 1: username → userId
+    setAvStatus('Step 1: looking up username…', 'loading');
+    let userRes, userData;
+    try {
+      userRes  = await fetch(`${S.workerUrl}/userid?username=${encodeURIComponent(username)}`);
+      userData = await userRes.json();
+    } catch(e) {
+      setAvStatus('Step 1 failed: ' + e.message, 'err'); return;
+    }
+    if (!userData.id) { setAvStatus('User not found on Roblox', 'err'); return; }
+
+    // Step 2: userId → image blob
+    setAvStatus('Step 2: fetching avatar…', 'loading');
+    let avRes;
+    try {
+      avRes = await fetch(`${S.workerUrl}/avatar?userId=${userData.id}`);
+    } catch(e) {
+      setAvStatus('Step 2 failed: ' + e.message, 'err'); return;
+    }
+    if (!avRes.ok) {
+      let errText = '';
+      try { const j = await avRes.json(); errText = j.error || ''; } catch(e) {}
+      setAvStatus(`Step 2 HTTP ${avRes.status}: ${errText}`, 'err'); return;
+    }
+
+    // Step 3: convert to base64
+    setAvStatus('Step 3: converting…', 'loading');
+    let b64;
+    try {
+      const blob = await avRes.blob();
+      b64 = await blobToBase64(blob);
+    } catch(e) {
+      setAvStatus('Step 3 failed: ' + e.message, 'err'); return;
+    }
+
+    pendingAv = b64;
+    setAvPreview(b64);
+    setAvStatus(`Fetched: ${userData.name}`, 'ok');
+
+  } catch(e) {
+    setAvStatus('Unexpected error: ' + e.message, 'err');
+  } finally {
+    document.getElementById('btn-fetch-av').disabled = false;
+  }
+}
+
+function blobToBase64(blob) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload  = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+}
+
+// AVATAR — MANUAL UPLOAD
+function fileAvatar(input) {
+  const f = input.files[0];
+  if (!f) return;
+  if (f.size > 2 * 1024 * 1024) { alert('Image must be under 2MB.'); return; }
+  const r = new FileReader();
+  r.onload = e => { pendingAv = e.target.result; setAvPreview(e.target.result); setAvStatus('Uploaded manually', 'ok'); };
+  r.readAsDataURL(f);
+}
+
+function setAvPreview(src) { document.getElementById('av-prev').innerHTML = `<img src="${src}" alt="">`; }
+function setAvStatus(msg, type) {
+  const el = document.getElementById('av-status');
+  el.textContent = msg;
+  el.className = 'av-status' + (type ? ' ' + type : '');
+}
+function resetAvPreview(u) {
+  document.getElementById('av-prev').innerHTML = `<span>${u ? u.slice(0,2).toUpperCase() : '?'}</span>`;
+  setAvStatus('No avatar set', '');
+  pendingAv = null;
+}
+
+// ─────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+load();
+renderPublic();
+</script>
+</body>
+</html>
