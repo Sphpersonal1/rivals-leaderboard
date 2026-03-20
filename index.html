@@ -65,26 +65,40 @@ nav {
 .tier-count { font-size:12px;color:var(--muted); }
 .tier-divider { flex:1;height:1px;background:var(--border); }
 
-.players-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:10px;position:relative; }
+/* ── ROW LIST ── */
+.players-grid { display:flex;flex-direction:column;gap:4px; }
 
 .player-card {
-  background:var(--surface);border:1px solid var(--border);border-radius:10px;
-  padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;
-  transition:border-color .2s, background .2s, transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s;
-  position:relative;overflow:hidden;cursor:default;
-  transform-origin:center top;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 16px;
+  display:grid;
+  grid-template-columns: 40px 44px 1fr 110px 110px 110px;
+  align-items:center;
+  gap:14px;
+  position:relative;
+  cursor:default;
+  transition: background .2s, border-color .2s, transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s, padding .25s;
   z-index:1;
+  overflow:hidden;
 }
 .player-card:hover {
-  border-color:var(--border2);
   background:var(--surface2);
-  transform:scale(1.1) translateY(-4px);
-  box-shadow:0 24px 64px rgba(0,0,0,0.6);
+  border-color:var(--border2);
+  transform:scaleY(1.04) translateY(-2px);
+  box-shadow:0 12px 40px rgba(0,0,0,0.5);
   z-index:10;
-  overflow:visible;
+  padding:16px 16px;
 }
-.player-card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:10px 10px 0 0;transition:height .2s; }
-.player-card:hover::before { height:3px; }
+
+/* left accent bar instead of top stripe */
+.player-card::before {
+  content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
+  border-radius:8px 0 0 8px;
+  transition:width .2s;
+}
+.player-card:hover::before { width:4px; }
 
 .ts-archnemesis .player-card::before { background:var(--c-archnemesis); }
 .ts-nemesis .player-card::before { background:var(--c-nemesis); }
@@ -94,37 +108,56 @@ nav {
 .ts-silver .player-card::before { background:var(--c-silver); }
 .ts-bronze .player-card::before { background:var(--c-bronze); }
 
-.rank-num { position:absolute;top:10px;right:11px;font-size:11px;font-weight:700;color:var(--muted);transition:opacity .15s; }
-.player-card:hover .rank-num { opacity:0.35; }
+/* rank number */
+.rank-num {
+  font-size:13px;font-weight:700;color:var(--muted);
+  text-align:center;
+  transition:font-size .2s, color .2s;
+}
+.player-card:hover .rank-num { font-size:15px; color:var(--muted2); }
 
+/* avatar */
 .card-avatar {
-  width:70px;height:70px;border-radius:50%;background:var(--surface3);
+  width:36px;height:36px;border-radius:50%;background:var(--surface3);
   border:2px solid var(--border2);overflow:hidden;display:flex;align-items:center;
-  justify-content:center;font-size:22px;font-weight:800;flex-shrink:0;
+  justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;
   transition:width .25s cubic-bezier(.34,1.56,.64,1), height .25s cubic-bezier(.34,1.56,.64,1), font-size .25s, border-color .2s;
 }
 .player-card:hover .card-avatar {
-  width:100px;
-  height:100px;
-  font-size:30px;
-  border-color:rgba(255,255,255,0.18);
+  width:52px;height:52px;font-size:18px;
+  border-color:rgba(255,255,255,0.2);
 }
 .card-avatar img { width:100%;height:100%;object-fit:cover; }
 
+/* name + badge together */
+.card-name-wrap { display:flex;flex-direction:column;gap:4px;min-width:0; }
 .card-name {
-  font-size:14px;font-weight:700;letter-spacing:-.2px;text-align:center;
+  font-size:14px;font-weight:700;letter-spacing:-.2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   transition:font-size .2s;
 }
-.player-card:hover .card-name { font-size:16px; }
+.player-card:hover .card-name { font-size:15px; }
 
-.card-stats { display:flex;gap:10px;width:100%; }
-.card-stat { flex:1;text-align:center; }
+/* stat cells */
+.card-stats { display:contents; }
+.card-stat { text-align:right; }
 .stat-val {
-  font-size:15px;font-weight:700;line-height:1;
+  font-size:14px;font-weight:700;line-height:1;
   transition:font-size .2s;
 }
-.player-card:hover .stat-val { font-size:17px; }
+.player-card:hover .stat-val { font-size:16px; }
 .stat-lbl { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px; }
+
+/* row header */
+.row-header {
+  display:grid;
+  grid-template-columns: 40px 44px 1fr 110px 110px 110px;
+  gap:14px;
+  padding:0 16px 8px;
+  font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.08em;
+}
+.row-header .rh-stat { text-align:right; }
 
 .tier-badge { font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:20px; }
 
@@ -548,6 +581,12 @@ function renderPublic() {
         <div class="tier-count">${players.length} player${players.length !== 1 ? 's' : ''}</div>
         <div class="tier-divider"></div>
       </div>
+      <div class="row-header">
+        <div>#</div><div></div><div>Player</div>
+        <div class="rh-stat">ELO</div>
+        <div class="rh-stat">Wins</div>
+        <div class="rh-stat">Win Rate</div>
+      </div>
       <div class="players-grid">
         ${players.map(p => {
           const init = (p.username||'??').slice(0,2).toUpperCase();
@@ -555,14 +594,14 @@ function renderPublic() {
           return `<div class="player-card">
             <div class="rank-num">#${rankMap[p.id]||'—'}</div>
             <div class="card-avatar">${avEl}</div>
-            <div class="card-name">${esc(p.username)}</div>
-            <span class="tier-badge bg-${cls}">${tier}</span>
-            <div class="card-stats">
-              <div class="card-stat"><div class="stat-val">${p.elo?p.elo.toLocaleString():'—'}</div><div class="stat-lbl">ELO</div></div>
-              <div class="card-stat"><div class="stat-val">${p.wins?p.wins.toLocaleString():'—'}</div><div class="stat-lbl">Wins</div></div>
-              <div class="card-stat"><div class="stat-val">${p.winrate!=null?p.winrate+'%':'—'}</div><div class="stat-lbl">W/R</div></div>
+            <div class="card-name-wrap">
+              <div class="card-name">${esc(p.username)}</div>
+              <span class="tier-badge bg-${cls}">${tier}</span>
+              ${p.note ? `<div style="font-size:11px;color:var(--muted)">${esc(p.note)}</div>` : ''}
             </div>
-            ${p.note ? `<div style="font-size:11px;color:var(--muted);text-align:center">${esc(p.note)}</div>` : ''}
+            <div class="card-stat"><div class="stat-val">${p.elo?p.elo.toLocaleString():'—'}</div><div class="stat-lbl">ELO</div></div>
+            <div class="card-stat"><div class="stat-val">${p.wins?p.wins.toLocaleString():'—'}</div><div class="stat-lbl">Wins</div></div>
+            <div class="card-stat"><div class="stat-val">${p.winrate!=null?p.winrate+'%':'—'}</div><div class="stat-lbl">W/R</div></div>
           </div>`;
         }).join('')}
       </div>
