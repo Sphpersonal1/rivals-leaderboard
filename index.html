@@ -65,15 +65,26 @@ nav {
 .tier-count { font-size:12px;color:var(--muted); }
 .tier-divider { flex:1;height:1px;background:var(--border); }
 
-.players-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:10px; }
+.players-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:10px;position:relative; }
 
 .player-card {
   background:var(--surface);border:1px solid var(--border);border-radius:10px;
   padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;
-  transition:border-color .15s,background .15s;position:relative;overflow:hidden;
+  transition:border-color .2s, background .2s, transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s;
+  position:relative;overflow:hidden;cursor:default;
+  transform-origin:center top;
+  z-index:1;
 }
-.player-card:hover { border-color:var(--border2);background:var(--surface2); }
-.player-card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px; }
+.player-card:hover {
+  border-color:var(--border2);
+  background:var(--surface2);
+  transform:scale(1.1) translateY(-4px);
+  box-shadow:0 24px 64px rgba(0,0,0,0.6);
+  z-index:10;
+  overflow:visible;
+}
+.player-card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:10px 10px 0 0;transition:height .2s; }
+.player-card:hover::before { height:3px; }
 
 .ts-archnemesis .player-card::before { background:var(--c-archnemesis); }
 .ts-nemesis .player-card::before { background:var(--c-nemesis); }
@@ -83,16 +94,37 @@ nav {
 .ts-silver .player-card::before { background:var(--c-silver); }
 .ts-bronze .player-card::before { background:var(--c-bronze); }
 
-.rank-num { position:absolute;top:10px;right:11px;font-size:11px;font-weight:700;color:var(--muted); }
+.rank-num { position:absolute;top:10px;right:11px;font-size:11px;font-weight:700;color:var(--muted);transition:opacity .15s; }
+.player-card:hover .rank-num { opacity:0.35; }
 
 .card-avatar {
   width:70px;height:70px;border-radius:50%;background:var(--surface3);
   border:2px solid var(--border2);overflow:hidden;display:flex;align-items:center;
   justify-content:center;font-size:22px;font-weight:800;flex-shrink:0;
+  transition:width .25s cubic-bezier(.34,1.56,.64,1), height .25s cubic-bezier(.34,1.56,.64,1), font-size .25s, border-color .2s;
+}
+.player-card:hover .card-avatar {
+  width:100px;
+  height:100px;
+  font-size:30px;
+  border-color:rgba(255,255,255,0.18);
 }
 .card-avatar img { width:100%;height:100%;object-fit:cover; }
 
-.card-name { font-size:14px;font-weight:700;letter-spacing:-.2px;text-align:center; }
+.card-name {
+  font-size:14px;font-weight:700;letter-spacing:-.2px;text-align:center;
+  transition:font-size .2s;
+}
+.player-card:hover .card-name { font-size:16px; }
+
+.card-stats { display:flex;gap:10px;width:100%; }
+.card-stat { flex:1;text-align:center; }
+.stat-val {
+  font-size:15px;font-weight:700;line-height:1;
+  transition:font-size .2s;
+}
+.player-card:hover .stat-val { font-size:17px; }
+.stat-lbl { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px; }
 
 .tier-badge { font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:20px; }
 
@@ -111,11 +143,6 @@ nav {
 .tc-gold { color:var(--c-gold); }
 .tc-silver { color:var(--c-silver); }
 .tc-bronze { color:var(--c-bronze); }
-
-.card-stats { display:flex;gap:10px;width:100%; }
-.card-stat { flex:1;text-align:center; }
-.stat-val { font-size:15px;font-weight:700;line-height:1; }
-.stat-lbl { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px; }
 
 .empty-state { text-align:center;padding:60px 20px;color:var(--muted);font-size:14px; }
 
