@@ -66,39 +66,38 @@ nav {
 .tier-divider { flex:1;height:1px;background:var(--border); }
 
 /* ── ROW LIST ── */
-.players-grid { display:flex;flex-direction:column;gap:4px; }
+.players-grid { display:flex;flex-direction:column;gap:3px; }
 
 .player-card {
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:8px;
-  padding:10px 16px;
+  padding:10px 16px 10px 20px;
   display:grid;
-  grid-template-columns: 40px 44px 1fr 110px 110px 110px;
+  grid-template-columns: 36px 40px 1fr 120px 120px 110px;
   align-items:center;
-  gap:14px;
+  gap:16px;
   position:relative;
   cursor:default;
-  transition: background .2s, border-color .2s, transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s, padding .25s;
+  transition: background .18s, border-color .18s, box-shadow .25s, padding .25s cubic-bezier(.34,1.56,.64,1);
   z-index:1;
-  overflow:hidden;
 }
 .player-card:hover {
   background:var(--surface2);
   border-color:var(--border2);
-  transform:scaleY(1.04) translateY(-2px);
-  box-shadow:0 12px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
+  padding-top: 16px;
+  padding-bottom: 16px;
   z-index:10;
-  padding:16px 16px;
 }
 
-/* left accent bar instead of top stripe */
+/* left accent bar */
 .player-card::before {
   content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
   border-radius:8px 0 0 8px;
   transition:width .2s;
 }
-.player-card:hover::before { width:4px; }
+.player-card:hover::before { width:5px; }
 
 .ts-archnemesis .player-card::before { background:var(--c-archnemesis); }
 .ts-nemesis .player-card::before { background:var(--c-nemesis); }
@@ -116,44 +115,78 @@ nav {
 }
 .player-card:hover .rank-num { font-size:15px; color:var(--muted2); }
 
-/* avatar */
+/* avatar wrapper — needed for online dot */
+.avatar-wrap {
+  position:relative; flex-shrink:0;
+  width:36px; height:36px;
+  transition: width .28s cubic-bezier(.34,1.56,.64,1), height .28s cubic-bezier(.34,1.56,.64,1);
+}
+.player-card:hover .avatar-wrap { width:56px; height:56px; }
+
 .card-avatar {
-  width:36px;height:36px;border-radius:50%;background:var(--surface3);
+  width:100%;height:100%;border-radius:50%;background:var(--surface3);
   border:2px solid var(--border2);overflow:hidden;display:flex;align-items:center;
-  justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;
-  transition:width .25s cubic-bezier(.34,1.56,.64,1), height .25s cubic-bezier(.34,1.56,.64,1), font-size .25s, border-color .2s;
+  justify-content:center;font-size:13px;font-weight:800;
+  transition: font-size .28s, border-color .2s;
 }
-.player-card:hover .card-avatar {
-  width:52px;height:52px;font-size:18px;
-  border-color:rgba(255,255,255,0.2);
-}
+.player-card:hover .card-avatar { font-size:20px; border-color:rgba(255,255,255,0.22); }
 .card-avatar img { width:100%;height:100%;object-fit:cover; }
 
-/* name + badge together */
-.card-name-wrap { display:flex;flex-direction:column;gap:4px;min-width:0; }
+/* online status dot */
+.online-dot {
+  position:absolute; bottom:1px; right:1px;
+  width:10px; height:10px; border-radius:50%;
+  border:2px solid var(--bg);
+  background:#4ade80;
+  display:none;
+  transition: width .2s, height .2s;
+}
+.online-dot.ingame { background:var(--c-archnemesis); }
+.online-dot.visible { display:block; }
+.player-card:hover .online-dot { width:13px; height:13px; }
+
+/* name + badge */
+.card-name-wrap { display:flex;flex-direction:column;gap:3px;min-width:0; }
 .card-name {
   font-size:14px;font-weight:700;letter-spacing:-.2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   transition:font-size .2s;
 }
-.player-card:hover .card-name { font-size:15px; }
+.player-card:hover .card-name { font-size:16px; }
+
+/* rivals badges row — revealed on hover */
+.card-badges {
+  display:flex; gap:4px; flex-wrap:wrap;
+  max-height:0; overflow:hidden; opacity:0;
+  transition: max-height .3s ease, opacity .25s;
+}
+.player-card:hover .card-badges { max-height:80px; opacity:1; }
+.rbadge {
+  font-size:10px; font-weight:600; color:var(--muted2);
+  background:var(--surface3); border:1px solid var(--border2);
+  border-radius:4px; padding:2px 7px; white-space:nowrap;
+}
 
 /* stat cells */
-.card-stats { display:contents; }
 .card-stat { text-align:right; }
 .stat-val {
   font-size:14px;font-weight:700;line-height:1;
   transition:font-size .2s;
 }
-.player-card:hover .stat-val { font-size:16px; }
-.stat-lbl { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px; }
+.player-card:hover .stat-val { font-size:17px; }
+.stat-lbl {
+  font-size:10px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.06em;margin-top:3px;
+  transition:opacity .2s;
+}
+.player-card:hover .stat-lbl { opacity:0; }
 
 /* row header */
 .row-header {
   display:grid;
-  grid-template-columns: 40px 44px 1fr 110px 110px 110px;
-  gap:14px;
-  padding:0 16px 8px;
+  grid-template-columns: 36px 44px 1fr 120px 120px 110px;
+  gap:16px;
+  padding:0 16px 8px 20px;
   font-size:11px;font-weight:700;color:var(--muted);
   text-transform:uppercase;letter-spacing:.08em;
 }
@@ -484,6 +517,7 @@ const TIERS = ['Archnemesis','Nemesis','Diamond','Platinum','Gold','Silver','Bro
 // ─────────────────────────────────────────────
 let S = { season:'Season 1', players:[], activeCategory:'ranked', workerUrl:'' };
 let pendingAv = null;
+let pendingRobloxId = null;
 let fetchDebounce = null;
 
 function load() {
@@ -591,13 +625,17 @@ function renderPublic() {
         ${players.map(p => {
           const init = (p.username||'??').slice(0,2).toUpperCase();
           const avEl = p.avatar ? `<img src="${p.avatar}" alt="">` : `<span>${init}</span>`;
-          return `<div class="player-card">
+          return `<div class="player-card" data-playerid="${p.id}">
             <div class="rank-num">#${rankMap[p.id]||'—'}</div>
-            <div class="card-avatar">${avEl}</div>
+            <div class="avatar-wrap">
+              <div class="card-avatar">${avEl}</div>
+              <div class="online-dot" id="dot-${p.id}"></div>
+            </div>
             <div class="card-name-wrap">
               <div class="card-name">${esc(p.username)}</div>
               <span class="tier-badge bg-${cls}">${tier}</span>
               ${p.note ? `<div style="font-size:11px;color:var(--muted)">${esc(p.note)}</div>` : ''}
+              <div class="card-badges" id="badges-${p.id}"></div>
             </div>
             <div class="card-stat"><div class="stat-val">${p.elo?p.elo.toLocaleString():'—'}</div><div class="stat-lbl">ELO</div></div>
             <div class="card-stat"><div class="stat-val">${p.wins?p.wins.toLocaleString():'—'}</div><div class="stat-lbl">Wins</div></div>
@@ -608,9 +646,43 @@ function renderPublic() {
     </div>`;
   });
   document.getElementById('pub-content').innerHTML = html;
+  // Fetch live profile data (online status + badges) async
+  setTimeout(fetchProfiles, 100);
 }
 
 function setCat(c) { S.activeCategory = c; renderPublic(); }
+
+// ─────────────────────────────────────────────
+// PROFILE FETCH — online status + badges
+// ─────────────────────────────────────────────
+async function fetchProfiles() {
+  if (!S.workerUrl) return;
+  const filtered = S.players.filter(p => p.category === S.activeCategory && p.robloxId);
+  if (!filtered.length) return;
+
+  await Promise.allSettled(filtered.map(async p => {
+    try {
+      const res = await fetch(`${S.workerUrl}/profile?userId=${p.robloxId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      // Online dot
+      const dot = document.getElementById('dot-' + p.id);
+      if (dot && data.online) {
+        dot.classList.add('visible');
+        if (data.inGame) dot.classList.add('ingame');
+      }
+
+      // Badges
+      const badgeEl = document.getElementById('badges-' + p.id);
+      if (badgeEl && data.badges && data.badges.length) {
+        badgeEl.innerHTML = data.badges
+          .map(b => `<span class="rbadge" title="${esc(b.description||'')}">${esc(b.name)}</span>`)
+          .join('');
+      }
+    } catch(e) {}
+  }));
+}
 
 // ─────────────────────────────────────────────
 // ADMIN RENDER
@@ -686,6 +758,7 @@ function openModal(id) {
     document.getElementById('f-wins').value  = p.wins || '';
     document.getElementById('f-wr').value    = p.winrate != null ? p.winrate : '';
     document.getElementById('f-note').value  = p.note || '';
+    pendingRobloxId = p.robloxId || null;
     if (p.avatar) { pendingAv = p.avatar; setAvPreview(p.avatar); setAvStatus('Saved avatar', 'ok'); }
     else resetAvPreview(p.username);
   } else {
@@ -694,12 +767,14 @@ function openModal(id) {
     document.getElementById('f-cat').value  = 'ranked';
     document.getElementById('f-tier').value = 'Gold';
     resetAvPreview('');
+    pendingRobloxId = null;
   }
 }
 
 function closeModal() {
   document.getElementById('modal-ov').classList.remove('open');
   pendingAv = null;
+  pendingRobloxId = null;
   clearTimeout(fetchDebounce);
 }
 document.getElementById('modal-ov').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
@@ -718,6 +793,7 @@ function savePlayer() {
     winrate:  document.getElementById('f-wr').value !== '' ? parseFloat(document.getElementById('f-wr').value) : null,
     note:     document.getElementById('f-note').value.trim(),
     avatar:   pendingAv || null,
+    robloxId: pendingRobloxId || (id ? (S.players.find(x=>x.id===id)||{}).robloxId : null) || null,
   };
   if (id) { const i = S.players.findIndex(x => x.id === id); if (i > -1) S.players[i] = p; }
   else S.players.push(p);
@@ -796,6 +872,7 @@ async function fetchAvatar(usernameOverride) {
     }
 
     pendingAv = b64;
+    pendingRobloxId = userData.id;
     setAvPreview(b64);
     setAvStatus(`Fetched: ${userData.name}`, 'ok');
 
