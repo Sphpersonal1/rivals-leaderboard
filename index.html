@@ -85,7 +85,6 @@ nav {
 .player-card:last-child { border-radius:0 0 8px 8px; }
 .player-card:hover {
   background:var(--surface2);
-  box-shadow:inset 0 0 0 1px var(--border2), 0 4px 24px rgba(0,0,0,0.4);
   z-index:10;
 }
 .player-card::before { display:none; }
@@ -104,8 +103,22 @@ nav {
   flex-shrink:0;
   transition:font-size .15s;
   padding:0 8px;
+  position:relative;
+  overflow:hidden;
 }
 .player-card:hover .rank-num { font-size:32px; }
+
+/* Olympic medal shine for top 3 */
+.rank-pos-1 .rank-num { background:linear-gradient(135deg,#7a5a00,#ffd700,#b8860b,#ffd700,#7a5a00); background-size:200% 200%; animation:shineGold 3s ease infinite; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.5); }
+.rank-pos-2 .rank-num { background:linear-gradient(135deg,#4a4a5a,#c0c8d8,#808898,#c0c8d8,#4a4a5a); background-size:200% 200%; animation:shineSilver 3s ease infinite; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.5); }
+.rank-pos-3 .rank-num { background:linear-gradient(135deg,#5a2800,#cd7f32,#8b4a00,#cd7f32,#5a2800); background-size:200% 200%; animation:shineBronze 3s ease infinite; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.5); }
+
+@keyframes shineGold   { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+@keyframes shineSilver { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+@keyframes shineBronze { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+/* Rank-coloured drop shadow on hover */
+.player-card:hover { box-shadow:0 4px 32px var(--rshadow, rgba(0,0,0,0.4)); }
 
 /* avatar wrapper — needed for online dot */
 .avatar-wrap {
@@ -185,10 +198,11 @@ nav {
 .row-header > div { padding:0 20px; }
 .row-header .rh-stat { text-align:right;padding-right:20px; }
 
-.tier-badge { font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px 2px 4px;border-radius:20px;display:inline-flex;align-items:center;gap:4px; }
+.tier-badge { font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px 3px 4px;border-radius:20px;display:inline-flex;align-items:center;gap:6px; }
 .tier-badge .rank-icon svg { width:100%;height:100%; }
 .rank-icon svg { width:100%;height:100%;display:block; }
 .tier-section .tier-header .rank-icon svg { width:100%;height:100%; }
+.tier-badge img { display:block;object-fit:contain; }
 
 .bg-archnemesis { background:rgba(255,45,85,.14);color:var(--c-archnemesis); }
 .bg-nemesis { background:rgba(200,240,0,.1);color:var(--c-nemesis); }
@@ -305,6 +319,103 @@ select option { background:var(--surface2); }
   .frow{grid-template-columns:1fr;}
   .logo-sub{display:none;}
 }
+
+/* ── ARCH AI ASSISTANT ── */
+.arch-btn {
+  position:fixed;bottom:24px;right:24px;z-index:500;
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,#ff2d55,#a0001a);
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(255,45,85,0.4);
+  transition:transform .2s, box-shadow .2s;
+  font-family:'Inter',sans-serif;
+}
+.arch-btn:hover { transform:scale(1.08); box-shadow:0 6px 28px rgba(255,45,85,0.55); }
+.arch-btn svg { width:24px;height:24px; }
+
+.arch-panel {
+  position:fixed;bottom:86px;right:24px;z-index:500;
+  width:340px;max-width:calc(100vw - 48px);
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:14px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.6);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  opacity:0;transform:translateY(12px) scale(0.97);
+  pointer-events:none;
+  transition:opacity .2s,transform .2s;
+  max-height:520px;
+}
+.arch-panel.open { opacity:1;transform:translateY(0) scale(1);pointer-events:all; }
+
+.arch-header {
+  display:flex;align-items:center;gap:10px;
+  padding:14px 16px;
+  background:linear-gradient(90deg,#1a0a10,#200810);
+  border-bottom:1px solid var(--border);
+}
+.arch-avatar {
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#ff2d55,#a0001a);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;color:#fff;flex-shrink:0;
+}
+.arch-title { font-size:13px;font-weight:700;color:var(--text); }
+.arch-sub { font-size:11px;color:var(--muted); }
+.arch-close {
+  margin-left:auto;background:transparent;border:none;
+  color:var(--muted);cursor:pointer;font-size:18px;line-height:1;
+  padding:2px 4px;transition:color .15s;
+}
+.arch-close:hover { color:var(--text); }
+
+.arch-messages {
+  flex:1;overflow-y:auto;padding:14px;
+  display:flex;flex-direction:column;gap:10px;
+  min-height:200px;
+}
+
+.arch-msg {
+  max-width:88%;font-size:13px;line-height:1.55;
+  padding:9px 12px;border-radius:10px;
+  animation:archFadeIn .2s ease;
+}
+@keyframes archFadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+
+.arch-msg.bot {
+  background:var(--surface2);color:var(--text);
+  border-radius:4px 10px 10px 10px;align-self:flex-start;
+  border:1px solid var(--border);
+}
+.arch-msg.user {
+  background:linear-gradient(135deg,#a0001a,#ff2d55);
+  color:#fff;
+  border-radius:10px 4px 10px 10px;align-self:flex-end;
+}
+.arch-msg.typing { color:var(--muted);font-style:italic; }
+
+.arch-input-row {
+  display:flex;gap:8px;padding:12px;
+  border-top:1px solid var(--border);
+  background:var(--surface);
+}
+.arch-input {
+  flex:1;background:var(--surface2);border:1px solid var(--border2);
+  border-radius:8px;padding:8px 12px;color:var(--text);
+  font-family:'Inter',sans-serif;font-size:13px;outline:none;
+  transition:border-color .15s;resize:none;
+}
+.arch-input:focus { border-color:rgba(255,45,85,0.5); }
+.arch-send {
+  width:36px;height:36px;border-radius:8px;flex-shrink:0;
+  background:var(--c-archnemesis);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .15s;
+}
+.arch-send:hover { opacity:.85; }
+.arch-send svg { width:16px;height:16px; }
 </style>
 </head>
 <body>
@@ -695,9 +806,12 @@ function renderPublic() {
     const init = (p.username||'??').slice(0,2).toUpperCase();
     const avEl = p.avatar ? `<img src="${p.avatar}" alt="">` : `<span>${init}</span>`;
     const iconEl = workerUrl
-      ? `<img src="${workerUrl}/rankicon?rank=${encodeURIComponent(p.tier)}" alt="${p.tier}" style="width:18px;height:18px;object-fit:contain">`
-      : (RANK_ICONS[p.tier] ? `<span style="width:18px;height:18px;display:inline-flex">${RANK_ICONS[p.tier]}</span>` : '');
-    return `<div class="player-card" data-playerid="${p.id}" style="--rcolor:${rcolor}">
+      ? `<img src="${workerUrl}/rankicon?rank=${encodeURIComponent(p.tier)}" alt="${p.tier}" style="width:28px;height:28px;object-fit:contain">`
+      : (RANK_ICONS[p.tier] ? `<span style="width:28px;height:28px;display:inline-flex">${RANK_ICONS[p.tier]}</span>` : '');
+    const posClass = pos === 1 ? 'rank-pos-1' : pos === 2 ? 'rank-pos-2' : pos === 3 ? 'rank-pos-3' : '';
+    const rshadow = tdot(p.tier).replace('var(','').replace(')','');
+    const shadowColor = {'--c-archnemesis':'rgba(255,45,85,0.35)','--c-nemesis':'rgba(200,240,0,0.25)','--c-onyx':'rgba(167,139,250,0.3)','--c-diamond':'rgba(0,212,255,0.3)','--c-platinum':'rgba(184,212,255,0.2)','--c-gold':'rgba(255,215,0,0.3)','--c-silver':'rgba(192,200,216,0.2)','--c-bronze':'rgba(205,127,50,0.3)'}[rshadow] || 'rgba(0,0,0,0.4)';
+    return `<div class="player-card ${posClass}" data-playerid="${p.id}" style="--rcolor:${rcolor};--rshadow:${shadowColor}">
       <div class="rank-num">${pos}<span class="rank-dot">.</span></div>
       <div class="avatar-wrap">
         <div class="card-avatar">${avEl}</div>
@@ -999,6 +1113,112 @@ function toast(msg) {
 // ─────────────────────────────────────────────
 load();
 renderPublic();
+
+// ── ARCH AI ASSISTANT ────────────────────────────────────────────
+var archOpen = false;
+var archHistory = [];
+
+function archToggle() {
+  archOpen = !archOpen;
+  document.getElementById('arch-panel').classList.toggle('open', archOpen);
+  if (archOpen) setTimeout(() => document.getElementById('arch-input').focus(), 220);
+}
+
+function archAddMsg(text, role) {
+  const el = document.getElementById('arch-messages');
+  const div = document.createElement('div');
+  div.className = 'arch-msg ' + (role === 'user' ? 'user' : 'bot');
+  div.textContent = text;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  return div;
+}
+
+async function archSend() {
+  const input = document.getElementById('arch-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  archAddMsg(text, 'user');
+
+  // Add to history
+  archHistory.push({ role: 'user', content: text });
+
+  // Typing indicator
+  const typing = archAddMsg('ARCH is thinking…', 'bot');
+  typing.classList.add('typing');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are ARCH, an AI assistant embedded in a community leaderboard site for the Roblox game RIVALS (made by Nosniy Games). You have deep knowledge of RIVALS including:
+- Ranks: Bronze, Silver, Gold, Platinum, Diamond, Onyx, Nemesis, Archnemesis (top 200)
+- ELO system, ranked mode (1v1, 2v2, 3v3), placement matches, ELO shields, ELO decay
+- Weapons: Assault Rifle, Handgun, Fists, Grenade, Sniper, Crossbow, Revolver, Katana, Riot Shield, and many more
+- Maps, strategies, win streaks, contracts, keys, skins, seasons, ranked rewards, Glory shop
+- Game mechanics: weapon banning, map voting, aim assist, third person mode restrictions
+- Season rewards and how the competitive system works
+
+You ONLY answer questions about RIVALS. If asked about anything unrelated to RIVALS, politely decline and redirect to RIVALS topics. Keep answers concise, helpful, and friendly. You can use short formatting like bullet points when listing things. Never make up specific numbers or facts you are unsure about — say you're not certain instead.`,
+        messages: archHistory,
+      }),
+    });
+
+    const data = await res.json();
+    const reply = data.content && data.content[0] && data.content[0].text;
+    typing.remove();
+
+    if (reply) {
+      archHistory.push({ role: 'assistant', content: reply });
+      archAddMsg(reply, 'bot');
+    } else {
+      archAddMsg('Sorry, I had trouble connecting. Try again!', 'bot');
+    }
+  } catch(e) {
+    typing.remove();
+    archAddMsg('Connection error — please try again.', 'bot');
+  }
+}
+
 </script>
+
+<!-- ── ARCH AI ASSISTANT ── -->
+<button class="arch-btn" onclick="archToggle()" title="Ask ARCH about Rivals" aria-label="Open ARCH assistant">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2a7 7 0 0 1 7 7c0 3.5-2.5 6.5-6 7.4V18h-2v-1.6C7.5 15.5 5 12.5 5 9a7 7 0 0 1 7-7z"/>
+    <circle cx="12" cy="9" r="2" fill="#fff" stroke="none"/>
+    <path d="M8 21h8M10 21v-2M14 21v-2"/>
+  </svg>
+</button>
+
+<div class="arch-panel" id="arch-panel">
+  <div class="arch-header">
+    <div class="arch-avatar">A</div>
+    <div>
+      <div class="arch-title">ARCH</div>
+      <div class="arch-sub">Rivals AI Assistant</div>
+    </div>
+    <button class="arch-close" onclick="archToggle()">&#x2715;</button>
+  </div>
+  <div class="arch-messages" id="arch-messages">
+    <div class="arch-msg bot">Hey! I'm ARCH — your Rivals guide. Ask me anything about ranks, weapons, maps, strategies, or anything else in the game!</div>
+  </div>
+  <div class="arch-input-row">
+    <textarea class="arch-input" id="arch-input" placeholder="Ask about Rivals..." rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();archSend()}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+    <button class="arch-send" onclick="archSend()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
 </body>
 </html>
