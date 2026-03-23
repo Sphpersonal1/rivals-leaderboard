@@ -709,13 +709,13 @@ function renderPublic() {
   const rows = sorted.map((p, i) => {
     const pos = i + 1;
     const cls = tc(p.tier);
-    const rcolor = rankColor(p.tier);
     const init = (p.username||'??').slice(0,2).toUpperCase();
     const avEl = p.avatar ? `<img src="${p.avatar}" alt="">` : `<span>${init}</span>`;
     const iconEl = workerUrl
       ? `<img src="${workerUrl}/rankicon?rank=${encodeURIComponent(p.tier)}" alt="${p.tier}" style="width:44px;height:44px;object-fit:contain">`
       : (RANK_ICONS[p.tier] ? `<span style="width:44px;height:44px;display:inline-flex">${RANK_ICONS[p.tier]}</span>` : '');
     const posClass = pos === 1 ? 'rank-pos-1' : pos === 2 ? 'rank-pos-2' : pos === 3 ? 'rank-pos-3' : '';
+    const rcolor = pos <= 3 ? rankColor(p.tier) : '#3b1f6e';
     const rshadow = tdot(p.tier).replace('var(','').replace(')','');
     const shadowColor = {'--c-archnemesis':'rgba(100,120,160,0.45)','--c-nemesis':'rgba(140,120,60,0.4)','--c-onyx':'rgba(80,60,110,0.45)','--c-diamond':'rgba(30,100,140,0.4)','--c-platinum':'rgba(80,100,130,0.35)','--c-gold':'rgba(140,100,10,0.4)','--c-silver':'rgba(80,100,130,0.3)','--c-bronze':'rgba(120,70,20,0.4)'}[rshadow] || 'rgba(0,0,0,0.4)';
     return `<div class="player-card ${posClass}" data-playerid="${p.id}" style="--rcolor:${rcolor};--rshadow:${shadowColor}">
