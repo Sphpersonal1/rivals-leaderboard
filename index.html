@@ -7,17 +7,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0d0d0f;
-  --surface: #141416;
-  --surface2: #1a1a1e;
-  --surface3: #202026;
+  --bg: #0e1118;
+  --surface: #151923;
+  --surface2: #1b2030;
+  --surface3: #222838;
   --border: rgba(255,255,255,0.06);
   --border2: rgba(255,255,255,0.1);
-  --text: #e8e8ec;
-  --muted: #666678;
-  --muted2: #888898;
+  --text: #e8eaf0;
+  --muted: #5a6480;
+  --muted2: #8090b0;
   --c-archnemesis: #ff2d55;
   --c-nemesis: #c8f000;
+  --c-onyx: #a78bfa;
   --c-diamond: #00d4ff;
   --c-platinum: #b8d4ff;
   --c-gold: #ffd700;
@@ -58,100 +59,91 @@ nav {
 .tab:hover { color:var(--text); }
 .tab.active { color:var(--text);border-bottom-color:var(--c-archnemesis);font-weight:600; }
 
-.tier-section { margin-bottom:36px; }
-.tier-header { display:flex;align-items:center;gap:10px;margin-bottom:14px; }
-.tier-name { font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase; }
-.tier-count { font-size:12px;color:var(--muted); }
-.tier-divider { flex:1;height:1px;background:var(--border); }
+.tier-section { margin-bottom:0; }
+.tier-header,.tier-name,.tier-count,.tier-divider { display:none; }
 
 /* ── ROW LIST ── */
-.players-grid { display:flex;flex-direction:column;gap:3px; }
+.players-grid { display:flex;flex-direction:column;gap:0; }
 
 .player-card {
   background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:10px 16px 10px 20px;
+  border-bottom:1px solid var(--border);
+  border-radius:0;
+  padding:0;
   display:grid;
-  grid-template-columns: 36px 40px 1fr 120px 120px 110px;
-  align-items:center;
-  gap:16px;
+  grid-template-columns: 100px 96px 1fr 130px 130px 110px;
+  align-items:stretch;
+  gap:0;
   position:relative;
   cursor:default;
-  transition: background .18s, border-color .18s, box-shadow .25s, padding .25s cubic-bezier(.34,1.56,.64,1);
+  transition: background .15s, box-shadow .2s;
   z-index:1;
+  overflow:hidden;
+  min-height:90px;
 }
+.player-card:first-child { border-radius:8px 8px 0 0; border-top:1px solid var(--border); }
+.player-card:last-child { border-radius:0 0 8px 8px; }
 .player-card:hover {
   background:var(--surface2);
-  border-color:var(--border2);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
-  padding-top: 16px;
-  padding-bottom: 16px;
+  box-shadow:inset 0 0 0 1px var(--border2), 0 4px 24px rgba(0,0,0,0.4);
   z-index:10;
 }
+.player-card::before { display:none; }
 
-/* left accent bar */
-.player-card::before {
-  content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
-  border-radius:8px 0 0 8px;
-  transition:width .2s;
-}
-.player-card:hover::before { width:5px; }
-
-.ts-archnemesis .player-card::before { background:var(--c-archnemesis); }
-.ts-nemesis .player-card::before { background:var(--c-nemesis); }
-.ts-diamond .player-card::before { background:var(--c-diamond); }
-.ts-platinum .player-card::before { background:var(--c-platinum); }
-.ts-gold .player-card::before { background:var(--c-gold); }
-.ts-silver .player-card::before { background:var(--c-silver); }
-.ts-bronze .player-card::before { background:var(--c-bronze); }
-
-/* rank number */
+/* rank number — mctiers coloured left block */
 .rank-num {
-  font-size:13px;font-weight:700;color:var(--muted);
-  text-align:center;
-  transition:font-size .2s, color .2s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  font-weight:900;
+  font-style:italic;
+  color:#fff;
+  background:var(--rcolor, var(--surface3));
+  letter-spacing:-1px;
+  flex-shrink:0;
+  transition:font-size .15s;
+  padding:0 8px;
 }
-.player-card:hover .rank-num { font-size:15px; color:var(--muted2); }
+.player-card:hover .rank-num { font-size:32px; }
 
 /* avatar wrapper — needed for online dot */
 .avatar-wrap {
   position:relative; flex-shrink:0;
-  width:36px; height:36px;
-  transition: width .28s cubic-bezier(.34,1.56,.64,1), height .28s cubic-bezier(.34,1.56,.64,1);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; background:var(--surface3);
 }
-.player-card:hover .avatar-wrap { width:56px; height:56px; }
-
 .card-avatar {
-  width:100%;height:100%;border-radius:50%;background:var(--surface3);
+  width:70px;height:70px;border-radius:50%;background:var(--surface2);
   border:2px solid var(--border2);overflow:hidden;display:flex;align-items:center;
-  justify-content:center;font-size:13px;font-weight:800;
-  transition: font-size .28s, border-color .2s;
+  justify-content:center;font-size:22px;font-weight:800;
+  transition: transform .2s, border-color .2s;
+  flex-shrink:0;
 }
-.player-card:hover .card-avatar { font-size:20px; border-color:rgba(255,255,255,0.22); }
+.player-card:hover .card-avatar { transform:scale(1.08); border-color:rgba(255,255,255,0.2); }
 .card-avatar img { width:100%;height:100%;object-fit:cover; }
 
 /* online status dot */
 .online-dot {
-  position:absolute; bottom:1px; right:1px;
-  width:10px; height:10px; border-radius:50%;
-  border:2px solid var(--bg);
-  background:#4ade80;
-  display:none;
-  transition: width .2s, height .2s;
+  position:absolute; bottom:10px; right:10px;
+  width:12px; height:12px; border-radius:50%;
+  border:2px solid var(--surface3);
+  background:#4ade80; display:none;
 }
 .online-dot.ingame { background:var(--c-archnemesis); }
 .online-dot.visible { display:block; }
-.player-card:hover .online-dot { width:13px; height:13px; }
 
 /* name + badge */
-.card-name-wrap { display:flex;flex-direction:column;gap:3px;min-width:0; }
-.card-name {
-  font-size:14px;font-weight:700;letter-spacing:-.2px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  transition:font-size .2s;
+.card-name-wrap {
+  display:flex;flex-direction:column;justify-content:center;
+  gap:5px;min-width:0;padding:0 20px;
 }
-.player-card:hover .card-name { font-size:16px; }
+.card-name {
+  font-size:20px;font-weight:800;letter-spacing:-.4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:font-size .15s;
+}
+.player-card:hover .card-name { font-size:22px; }
 
 /* rivals badges row — revealed on hover */
 .card-badges {
@@ -167,29 +159,31 @@ nav {
 }
 
 /* stat cells */
-.card-stat { text-align:right; }
-.stat-val {
-  font-size:14px;font-weight:700;line-height:1;
-  transition:font-size .2s;
+.card-stat {
+  text-align:right;
+  display:flex;flex-direction:column;justify-content:center;padding-right:20px;
 }
-.player-card:hover .stat-val { font-size:17px; }
+.stat-val {
+  font-size:18px;font-weight:800;line-height:1;
+  transition:font-size .15s;
+}
+.player-card:hover .stat-val { font-size:20px; }
 .stat-lbl {
   font-size:10px;color:var(--muted);text-transform:uppercase;
-  letter-spacing:.06em;margin-top:3px;
-  transition:opacity .2s;
+  letter-spacing:.06em;margin-top:4px;
 }
-.player-card:hover .stat-lbl { opacity:0; }
 
 /* row header */
 .row-header {
   display:grid;
-  grid-template-columns: 36px 44px 1fr 120px 120px 110px;
-  gap:16px;
-  padding:0 16px 8px 20px;
+  grid-template-columns: 100px 96px 1fr 130px 130px 110px;
+  gap:0;
+  padding:0 0 8px 0;
   font-size:11px;font-weight:700;color:var(--muted);
   text-transform:uppercase;letter-spacing:.08em;
 }
-.row-header .rh-stat { text-align:right; }
+.row-header > div { padding:0 20px; }
+.row-header .rh-stat { text-align:right;padding-right:20px; }
 
 .tier-badge { font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px 2px 4px;border-radius:20px;display:inline-flex;align-items:center;gap:4px; }
 .tier-badge .rank-icon svg { width:100%;height:100%; }
@@ -198,6 +192,7 @@ nav {
 
 .bg-archnemesis { background:rgba(255,45,85,.14);color:var(--c-archnemesis); }
 .bg-nemesis { background:rgba(200,240,0,.1);color:var(--c-nemesis); }
+.bg-onyx { background:rgba(167,139,250,.12);color:var(--c-onyx); }
 .bg-diamond { background:rgba(0,212,255,.1);color:var(--c-diamond); }
 .bg-platinum { background:rgba(184,212,255,.1);color:var(--c-platinum); }
 .bg-gold { background:rgba(255,215,0,.1);color:var(--c-gold); }
@@ -206,6 +201,7 @@ nav {
 
 .tc-archnemesis { color:var(--c-archnemesis); }
 .tc-nemesis { color:var(--c-nemesis); }
+.tc-onyx { color:var(--c-onyx); }
 .tc-diamond { color:var(--c-diamond); }
 .tc-platinum { color:var(--c-platinum); }
 .tc-gold { color:var(--c-gold); }
@@ -300,7 +296,11 @@ select option { background:var(--surface2); }
 .config-banner code { background:var(--surface3);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px;color:var(--text); }
 
 @media(max-width:600px){
-  .players-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+  .player-card{grid-template-columns:70px 60px 1fr 80px;}
+  .player-card .card-stat:nth-child(5),.player-card .card-stat:nth-child(6){display:none;}
+  .row-header{display:none;}
+  .rank-num{font-size:20px;}
+  .card-name{font-size:16px;}
   .adm-wrap,.pub-wrap{padding:16px 14px 40px;}
   .frow{grid-template-columns:1fr;}
   .logo-sub{display:none;}
@@ -466,6 +466,7 @@ select option { background:var(--surface2); }
         <select id="f-tier">
           <option value="Archnemesis">Archnemesis</option>
           <option value="Nemesis">Nemesis</option>
+          <option value="Onyx">Onyx</option>
           <option value="Diamond">Diamond</option>
           <option value="Platinum">Platinum</option>
           <option value="Gold" selected>Gold</option>
@@ -514,6 +515,12 @@ const PASS = 'rivals2024';
 const KEY  = 'rivals_v3';
 // ── Rank SVG icons (inline, no external deps) ────────────────────
 const RANK_ICONS = {
+  Onyx: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="og" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c4b5fd"/><stop offset="100%" stop-color="#5b21b6"/></linearGradient></defs>
+    <polygon points="20,3 29,10 36,20 29,30 20,37 11,30 4,20 11,10" fill="url(#og)" stroke="#a78bfa" stroke-width="0.8"/>
+    <polygon points="20,10 26,16 30,20 26,24 20,30 14,24 10,20 14,16" fill="#a78bfa" opacity="0.3"/>
+    <circle cx="20" cy="20" r="3.5" fill="#fff" opacity="0.85"/>
+  </svg>`,
   Archnemesis: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
     <defs><radialGradient id="ag" cx="50%" cy="35%" r="60%"><stop offset="0%" stop-color="#ff6b88"/><stop offset="100%" stop-color="#a0001a"/></radialGradient></defs>
     <polygon points="20,2 26,10 36,8 30,17 38,24 28,24 20,38 12,24 2,24 10,17 4,8 14,10" fill="url(#ag)" stroke="#ff2d55" stroke-width="0.8"/>
@@ -565,7 +572,7 @@ function rankIcon(tier, size) {
   return `<span class="rank-icon" style="width:${size}px;height:${size}px;display:inline-flex;flex-shrink:0">${svg}</span>`;
 }
 
-const TIERS = ['Archnemesis','Nemesis','Diamond','Platinum','Gold','Silver','Bronze'];
+const TIERS = ['Archnemesis','Nemesis','Onyx','Diamond','Platinum','Gold','Silver','Bronze'];
 
 // ─────────────────────────────────────────────
 // STATE
@@ -628,13 +635,21 @@ function doLogout() { sessionStorage.removeItem('rivals_adm'); showView('public'
 // PUBLIC RENDER
 // ─────────────────────────────────────────────
 function tc(t) {
-  return ({Archnemesis:'archnemesis',Nemesis:'nemesis',Diamond:'diamond',
+  return ({Archnemesis:'archnemesis',Nemesis:'nemesis',Onyx:'onyx',Diamond:'diamond',
            Platinum:'platinum',Gold:'gold',Silver:'silver',Bronze:'bronze'})[t] || 'bronze';
 }
 function tdot(t) {
-  return ({Archnemesis:'var(--c-archnemesis)',Nemesis:'var(--c-nemesis)',
+  return ({Archnemesis:'var(--c-archnemesis)',Nemesis:'var(--c-nemesis)',Onyx:'var(--c-onyx)',
            Diamond:'var(--c-diamond)',Platinum:'var(--c-platinum)',
            Gold:'var(--c-gold)',Silver:'var(--c-silver)',Bronze:'var(--c-bronze)'})[t] || 'var(--c-bronze)';
+}
+// Rank colours for the numbered position block
+function rankColor(t) {
+  return ({
+    Archnemesis:'#8b0018',Nemesis:'#4a5e00',Onyx:'#3d2d7a',
+    Diamond:'#005f7a',Platinum:'#2a3d6e',Gold:'#6e5200',
+    Silver:'#3a4050',Bronze:'#5a3000'
+  })[t] || '#222838';
 }
 
 function getCats() {
@@ -657,58 +672,50 @@ function renderPublic() {
     return;
   }
 
-  const groups = {};
-  TIERS.forEach(t => { groups[t] = []; });
-  filtered.forEach(p => { (groups[p.tier] || groups['Bronze']).push(p); });
-  TIERS.forEach(t => groups[t].sort((a,b) => (b.elo||0) - (a.elo||0)));
-
-  const byElo = [...filtered].sort((a,b) => (b.elo||0) - (a.elo||0));
-  const rankMap = {};
-  byElo.forEach((p,i) => rankMap[p.id] = i+1);
-
-  let html = '';
-  TIERS.forEach(tier => {
-    const players = groups[tier];
-    if (!players.length) return;
-    const cls = tc(tier), dot = tdot(tier);
-    html += `<div class="tier-section ts-${cls}">
-      <div class="tier-header">
-        <span class="rank-icon" style="width:32px;height:32px;display:inline-flex">${RANK_ICONS[tier]||''}</span>
-        <div class="tier-name tc-${cls}">${tier}</div>
-        <div class="tier-count">${players.length} player${players.length !== 1 ? 's' : ''}</div>
-        <div class="tier-divider"></div>
-      </div>
-      <div class="row-header">
-        <div>#</div><div></div><div>Player</div>
-        <div class="rh-stat">ELO</div>
-        <div class="rh-stat">Wins</div>
-        <div class="rh-stat">Win Rate</div>
-      </div>
-      <div class="players-grid">
-        ${players.map(p => {
-          const init = (p.username||'??').slice(0,2).toUpperCase();
-          const avEl = p.avatar ? `<img src="${p.avatar}" alt="">` : `<span>${init}</span>`;
-          return `<div class="player-card" data-playerid="${p.id}">
-            <div class="rank-num">#${rankMap[p.id]||'—'}</div>
-            <div class="avatar-wrap">
-              <div class="card-avatar">${avEl}</div>
-              <div class="online-dot" id="dot-${p.id}"></div>
-            </div>
-            <div class="card-name-wrap">
-              <div class="card-name">${esc(p.username)}</div>
-              <span class="tier-badge bg-${cls}">${rankIcon(tier,16)}<span>${tier}</span></span>
-              ${p.note ? `<div style="font-size:11px;color:var(--muted)">${esc(p.note)}</div>` : ''}
-              <div class="card-badges" id="badges-${p.id}"></div>
-            </div>
-            <div class="card-stat"><div class="stat-val">${p.elo?p.elo.toLocaleString():'—'}</div><div class="stat-lbl">ELO</div></div>
-            <div class="card-stat"><div class="stat-val">${p.wins?p.wins.toLocaleString():'—'}</div><div class="stat-lbl">Wins</div></div>
-            <div class="card-stat"><div class="stat-val">${p.winrate!=null?p.winrate+'%':'—'}</div><div class="stat-lbl">W/R</div></div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
+  // Flat list sorted by tier rank then ELO
+  const sorted = [...filtered].sort((a,b) => {
+    const ta = TIERS.indexOf(a.tier), tb = TIERS.indexOf(b.tier);
+    if (ta !== tb) return ta - tb;
+    return (b.elo||0) - (a.elo||0);
   });
-  document.getElementById('pub-content').innerHTML = html;
+
+  const workerUrl = S.workerUrl || '';
+
+  const rowHeader = `<div class="row-header">
+    <div style="padding-left:20px">#</div><div></div><div style="padding-left:20px">Player</div>
+    <div class="rh-stat">ELO</div>
+    <div class="rh-stat">Wins</div>
+    <div class="rh-stat">Win Rate</div>
+  </div>`;
+
+  const rows = sorted.map((p, i) => {
+    const pos = i + 1;
+    const cls = tc(p.tier);
+    const rcolor = rankColor(p.tier);
+    const init = (p.username||'??').slice(0,2).toUpperCase();
+    const avEl = p.avatar ? `<img src="${p.avatar}" alt="">` : `<span>${init}</span>`;
+    const iconEl = workerUrl
+      ? `<img src="${workerUrl}/rankicon?rank=${encodeURIComponent(p.tier)}" alt="${p.tier}" style="width:18px;height:18px;object-fit:contain">`
+      : (RANK_ICONS[p.tier] ? `<span style="width:18px;height:18px;display:inline-flex">${RANK_ICONS[p.tier]}</span>` : '');
+    return `<div class="player-card" data-playerid="${p.id}" style="--rcolor:${rcolor}">
+      <div class="rank-num">${pos}<span class="rank-dot">.</span></div>
+      <div class="avatar-wrap">
+        <div class="card-avatar">${avEl}</div>
+        <div class="online-dot" id="dot-${p.id}"></div>
+      </div>
+      <div class="card-name-wrap">
+        <div class="card-name">${esc(p.username)}</div>
+        <span class="tier-badge bg-${cls}">${iconEl}<span>${p.tier}</span></span>
+        ${p.note ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(p.note)}</div>` : ''}
+        <div class="card-badges" id="badges-${p.id}"></div>
+      </div>
+      <div class="card-stat"><div class="stat-val">${p.elo?p.elo.toLocaleString():'—'}</div><div class="stat-lbl">ELO</div></div>
+      <div class="card-stat"><div class="stat-val">${p.wins?p.wins.toLocaleString():'—'}</div><div class="stat-lbl">Wins</div></div>
+      <div class="card-stat"><div class="stat-val">${p.winrate!=null?p.winrate+'%':'—'}</div><div class="stat-lbl">W/R</div></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('pub-content').innerHTML = rowHeader + `<div class="players-grid">${rows}</div>`;
   // Fetch live profile data (online status + badges) async
   setTimeout(fetchProfiles, 100);
 }
