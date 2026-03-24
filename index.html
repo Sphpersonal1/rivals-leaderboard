@@ -602,18 +602,25 @@ let fetchDebounce = null;
 
 function load() {
   try {
-    // Migrate from previous storage key if needed
-    const old = localStorage.getItem('rivals_v2');
-    if (old && !localStorage.getItem(KEY)) {
-      localStorage.setItem(KEY, old);
+    // Migrate from rivals_v2 if needed
+    const oldData = localStorage.getItem('rivals_v2');
+    if (oldData && !localStorage.getItem(KEY)) {
+      localStorage.setItem(KEY, oldData);
     }
     const r = localStorage.getItem(KEY);
-    if (r) S = JSON.parse(r);
-  } catch(e) {}
-  S.players        = S.players        || [];
-  S.season         = S.season         || 'Season 1';
-  S.activeCategory = S.activeCategory || 'ranked';
-  S.workerUrl      = S.workerUrl      || '';
+    if (r) {
+      const parsed = JSON.parse(r);
+      // Merge parsed into S, preserving all keys including workerUrl
+      S = Object.assign({}, S, parsed);
+    }
+  } catch(e) {
+    console.warn('Failed to load saved state:', e);
+  }
+  // Only set defaults for missing keys, never overwrite a saved value
+  if (!S.players)        S.players = [];
+  if (!S.season)         S.season = 'Season 1';
+  if (!S.activeCategory) S.activeCategory = 'ranked';
+  if (S.workerUrl === undefined) S.workerUrl = '';
 }
 function save() { localStorage.setItem(KEY, JSON.stringify(S)); }
 
@@ -823,7 +830,17 @@ function saveSettings() {
   S.season    = document.getElementById('set-season').value || 'Season 1';
   S.workerUrl = document.getElementById('set-worker').value.trim().replace(/\/$/, '');
   save();
-  toast('Settings saved');
+  // Verify it actually saved
+  try {
+    const check = JSON.parse(localStorage.getItem(KEY));
+    if (check && check.workerUrl === S.workerUrl) {
+      toast('Settings saved ✓');
+    } else {
+      toast('Save may have failed — try again');
+    }
+  } catch(e) {
+    toast('Settings saved');
+  }
   showView('admin');
 }
 
