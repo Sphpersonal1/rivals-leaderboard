@@ -647,8 +647,8 @@ select option { background:var(--surface2); }
 // ─────────────────────────────────────────────
 const PASS = 'rivals2024';
 const KEY  = 'rivals_v3';
-const WORKER_URL = 'https://rivals-proxy.sp-herrick.workers.dev';
-const ADMIN_KEY  = 'rivals-admin-2024'; // ← must match worker ADMIN_KEY
+const WORKER_URL = 'https://hidden-smoke-2781.sp-herrick.workers.dev';
+
 // ── Rank SVG icons (inline, no external deps) ────────────────────
 const RANK_ICONS = {
   Onyx: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -720,23 +720,20 @@ let fetchDebounce = null;
 
 // ── KV-backed persistence ────────────────────────────────────────
 async function load() {
-  // Always use hardcoded worker URL
   S.workerUrl = WORKER_URL;
   try {
-    const res = await fetch(WORKER_URL + '/data');
+    const res = await fetch(WORKER_URL + '/data', { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       S = Object.assign({}, S, data);
     }
   } catch(e) {
-    console.warn('Could not load from KV, falling back to localStorage:', e);
-    // Fallback: try localStorage in case of network issues
+    console.warn('Could not load from KV, using localStorage fallback:', e);
     try {
       const r = localStorage.getItem(KEY);
       if (r) S = Object.assign({}, S, JSON.parse(r));
     } catch(e2) {}
   }
-  // Ensure defaults
   if (!S.players)        S.players = [];
   if (!S.season)         S.season = 'Season 1';
   if (!S.activeCategory) S.activeCategory = 'ranked';
@@ -744,24 +741,20 @@ async function load() {
 }
 
 async function save() {
-  // Save to KV via worker
+  localStorage.setItem(KEY, JSON.stringify(S));
   try {
     const res = await fetch(WORKER_URL + '/data', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-admin-key': ADMIN_KEY,
+        'x-admin-key': 'rivals-admin-2024',
       },
       body: JSON.stringify(S),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    // Also keep localStorage as backup
-    localStorage.setItem(KEY, JSON.stringify(S));
   } catch(e) {
     console.error('KV save failed:', e);
-    // Fallback to localStorage only
-    localStorage.setItem(KEY, JSON.stringify(S));
-    throw e; // re-throw so callers can show error
+    throw e;
   }
 }
 
@@ -866,7 +859,7 @@ function renderPublic() {
     const rcolor = pos <= 3 ? rankColor(p.tier) : '#1e2a3a';
     const rshadow = tdot(p.tier).replace('var(','').replace(')','');
     const shadowColor = {'--c-archnemesis':'rgba(100,120,160,0.45)','--c-nemesis':'rgba(140,120,60,0.4)','--c-onyx':'rgba(80,60,110,0.45)','--c-diamond':'rgba(30,100,140,0.4)','--c-platinum':'rgba(80,100,130,0.35)','--c-gold':'rgba(140,100,10,0.4)','--c-silver':'rgba(80,100,130,0.3)','--c-bronze':'rgba(120,70,20,0.4)'}[rshadow] || 'rgba(0,0,0,0.4)';
-    return `<div class="player-card ${posClass}" data-playerid="${p.id}" style="--rcolor:${rcolor};--rshadow:${shadowColor};cursor:pointer" onclick="openProfile('${p.id}')">
+    return `<div class="player-card ${posClass}" data-playerid="${p.id}" data-pid="${p.id}" style="--rcolor:${rcolor};--rshadow:${shadowColor};cursor:pointer">
       <div class="rank-num">${pos}<span class="rank-dot">.</span></div>
       <div class="avatar-wrap">
         <div class="card-avatar">${avEl}</div>
@@ -885,6 +878,14 @@ function renderPublic() {
   }).join('');
 
   document.getElementById('pub-content').innerHTML = rowHeader + `<div class="players-grid">${rows}</div>`;
+  // Event delegation for row clicks — avoids inline onclick quoting issues
+  const pubGrid = document.getElementById('pub-content');
+  pubGrid._clickHandler && pubGrid.removeEventListener('click', pubGrid._clickHandler);
+  pubGrid._clickHandler = function(e) {
+    const card = e.target.closest('[data-pid]');
+    if (card) openProfile(card.dataset.pid);
+  };
+  pubGrid.addEventListener('click', pubGrid._clickHandler);
   // Fetch live profile data (online status + badges) async
   setTimeout(fetchProfiles, 100);
 }
@@ -1277,6 +1278,9 @@ document.addEventListener('keydown', function(e) {
 // INIT
 // ─────────────────────────────────────────────
 (async () => {
+  // Show loading indicator while fetching from KV
+  const pubContent = document.getElementById('pub-content');
+  if (pubContent) pubContent.innerHTML = '<div class="empty-state" style="opacity:0.5">Loading leaderboard…</div>';
   await load();
   renderPublic();
 })();
