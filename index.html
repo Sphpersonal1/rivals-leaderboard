@@ -531,6 +531,7 @@ select option { background:var(--surface2); }
 // ─────────────────────────────────────────────
 const PASS = 'rivals2024';
 const KEY  = 'rivals_v3';
+const WORKER_URL = 'https://rivals-proxy.sp-herrick.workers.dev';
 // ── Rank SVG icons (inline, no external deps) ────────────────────
 const RANK_ICONS = {
   Onyx: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -595,7 +596,7 @@ const TIERS = ['Archnemesis','Nemesis','Onyx','Diamond','Platinum','Gold','Silve
 // ─────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────
-let S = { season:'Season 1', players:[], activeCategory:'ranked', workerUrl:'' };
+let S = { season:'Season 1', players:[], activeCategory:'ranked', workerUrl:'https://rivals-proxy.sp-herrick.workers.dev' };
 let pendingAv = null;
 let pendingRobloxId = null;
 let fetchDebounce = null;
@@ -620,7 +621,7 @@ function load() {
   if (!S.players)        S.players = [];
   if (!S.season)         S.season = 'Season 1';
   if (!S.activeCategory) S.activeCategory = 'ranked';
-  if (S.workerUrl === undefined) S.workerUrl = '';
+  S.workerUrl = WORKER_URL; // always use hardcoded URL
 }
 function save() { localStorage.setItem(KEY, JSON.stringify(S)); }
 
