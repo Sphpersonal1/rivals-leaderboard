@@ -1022,7 +1022,6 @@ function closeModal() {
   pendingAv = null;
   pendingRobloxId = null;
   pendingDisplayName = null;
-  clearTimeout(fetchDebounce);
 }
 document.getElementById('modal-ov').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
@@ -1073,10 +1072,7 @@ function onUsernameInput() {
     document.getElementById('av-prev').innerHTML = `<span>${u ? u.slice(0,2).toUpperCase() : '?'}</span>`;
   }
 
-  // Auto-fetch if worker configured and username looks real (>2 chars)
-  if (!S.workerUrl || u.length < 3) return;
-  clearTimeout(fetchDebounce);
-  fetchDebounce = setTimeout(() => fetchAvatar(u), 1200);
+  // No auto-fetch — user must click the button to avoid wasted attempts
 }
 
 // Triggered by button OR auto-debounce
@@ -1089,57 +1085,34 @@ async function fetchAvatar(usernameOverride) {
   document.getElementById('btn-fetch-av').disabled = true;
 
   try {
-    // Step 1: username → userId
-    setAvStatus('Step 1: looking up username…', 'loading');
-    let userRes, userData;
-    try {
-      userRes  = await fetch(`${S.workerUrl}/userid?username=${encodeURIComponent(username)}`);
-      userData = await userRes.json();
-    } catch(e) {
-      setAvStatus('Step 1 failed: ' + e.message, 'err'); return;
-    }
+    // Step 1: username → userId + displayName
+    setAvStatus('Looking up username…', 'loading');
+    const userRes = await fetch(`${S.workerUrl}/userid?username=${encodeURIComponent(username)}`);
+    if (!userRes.ok) { setAvStatus('Username lookup failed (' + userRes.status + ')', 'err'); return; }
+    const userData = await userRes.json();
     if (!userData.id) { setAvStatus('User not found on Roblox', 'err'); return; }
 
-    // Step 2: userId → image blob (retry up to 3 times for slow Roblox responses)
-    setAvStatus('Step 2: fetching avatar…', 'loading');
-    let avRes;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        avRes = await fetch(`${S.workerUrl}/avatar?userId=${userData.id}`);
-      } catch(e) {
-        if (attempt === 3) { setAvStatus('Step 2 failed: ' + e.message, 'err'); return; }
-        setAvStatus(`Step 2: retrying (${attempt}/3)…`, 'loading');
-        await new Promise(r => setTimeout(r, 800));
-        continue;
-      }
-      if (avRes.ok) break;
-      if (attempt === 3) {
-        let errText = '';
-        try { const j = await avRes.clone().json(); errText = j.error || ''; } catch(e) {}
-        setAvStatus(`Step 2 failed (${avRes.status}): ${errText}`, 'err'); return;
-      }
-      setAvStatus(`Step 2: retrying (${attempt}/3)…`, 'loading');
-      await new Promise(r => setTimeout(r, 800));
+    // Step 2: fetch avatar image (worker handles all retries internally)
+    setAvStatus('Fetching avatar… (this can take a moment)', 'loading');
+    const avRes = await fetch(`${S.workerUrl}/avatar?userId=${userData.id}`);
+    if (!avRes.ok) {
+      let errText = '';
+      try { const j = await avRes.clone().json(); errText = j.error || ''; } catch(e) {}
+      setAvStatus(`Avatar failed: ${errText || avRes.status}`, 'err'); return;
     }
 
     // Step 3: convert to base64
-    setAvStatus('Step 3: converting…', 'loading');
-    let b64;
-    try {
-      const blob = await avRes.blob();
-      b64 = await blobToBase64(blob);
-    } catch(e) {
-      setAvStatus('Step 3 failed: ' + e.message, 'err'); return;
-    }
+    const blob = await avRes.blob();
+    const b64 = await blobToBase64(blob);
 
     pendingAv = b64;
     pendingRobloxId = userData.id;
     pendingDisplayName = userData.displayName || userData.name;
     setAvPreview(b64);
-    setAvStatus(`Fetched: ${userData.displayName || userData.name}`, 'ok');
+    setAvStatus(`✓ ${userData.displayName || userData.name}`, 'ok');
 
   } catch(e) {
-    setAvStatus('Unexpected error: ' + e.message, 'err');
+    setAvStatus('Error: ' + (e.message || 'network failure'), 'err');
   } finally {
     document.getElementById('btn-fetch-av').disabled = false;
   }
