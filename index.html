@@ -439,6 +439,30 @@ select option { background:var(--surface2); }
 .profile-status-dot.online { background:#4ade80; }
 .profile-status-dot.ingame { background:var(--c-archnemesis); }
 .profile-status-text { font-size:12px;color:var(--muted); }
+
+/* profile modal extras */
+.profile-bio {
+  padding:14px 20px;font-size:13px;color:var(--muted2);
+  line-height:1.6;border-bottom:1px solid var(--border);
+  font-style:italic;
+}
+.profile-bio:empty { display:none; }
+.profile-extra-stats {
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--border);
+  border-bottom:1px solid var(--border);
+}
+.profile-nosniy-badge {
+  display:flex;align-items:center;gap:8px;
+  padding:12px 20px;border-bottom:1px solid var(--border);
+  font-size:12px;font-weight:600;color:#a78bfa;
+  background:rgba(167,139,250,0.06);
+}
+.profile-nosniy-badge .dot { width:8px;height:8px;border-radius:50%;background:#a78bfa;flex-shrink:0; }
+.profile-account-age {
+  padding:10px 20px;font-size:12px;color:var(--muted);
+  border-bottom:1px solid var(--border);
+}
 </style>
 </head>
 <body>
@@ -1224,23 +1248,64 @@ function openProfile(pid) {
     badgesEl.innerHTML = '';
   }
 
-  // Online status from live dot
-  const dot2 = document.getElementById('pm-online-dot');
-  const statusDot = document.getElementById('pm-status-dot');
-  const statusText = document.getElementById('pm-status-text');
-  if (liveDot && liveDot.classList.contains('visible')) {
-    if (liveDot.classList.contains('ingame')) {
-      dot2 && dot2.classList.add('visible','ingame');
-      statusDot.className = 'profile-status-dot ingame';
-      statusText.textContent = 'Currently playing Rivals';
-    } else {
-      dot2 && dot2.classList.add('visible');
-      statusDot.className = 'profile-status-dot online';
-      statusText.textContent = 'Online on Roblox';
-    }
-  } else {
-    statusDot.className = 'profile-status-dot';
-    statusText.textContent = 'Offline';
+  // Status will be populated by live profile fetch below
+
+  // Fetch live profile data
+  if (p.robloxId && S.workerUrl) {
+    fetch(`${S.workerUrl}/profile?userId=${p.robloxId}`)
+      .then(r => r.json())
+      .then(data => {
+        // Bio
+        const bioEl = document.getElementById('pm-bio');
+        if (bioEl) bioEl.textContent = data.bio || '';
+
+        // Nosniy Games badge
+        const nosniyEl = document.getElementById('pm-nosniy');
+        if (nosniyEl) nosniyEl.style.display = data.inNosnyGroup ? 'flex' : 'none';
+
+        // Friends / followers
+        const fmtNum = n => n != null ? (n >= 1000 ? (n/1000).toFixed(1)+'k' : n.toString()) : '—';
+        const friendsEl = document.getElementById('pm-friends');
+        const followersEl = document.getElementById('pm-followers');
+        if (friendsEl) friendsEl.textContent = fmtNum(data.friendCount);
+        if (followersEl) followersEl.textContent = fmtNum(data.followerCount);
+
+        // Account age
+        const ageEl = document.getElementById('pm-account-age');
+        if (ageEl && data.createdAt) {
+          const years = ((Date.now() - new Date(data.createdAt)) / (365.25*24*60*60*1000));
+          ageEl.textContent = years >= 1 ? Math.floor(years) + 'y' : Math.floor(years*12) + 'mo';
+        }
+
+        // Use bust shot for avatar if available
+        if (data.bustUrl) {
+          const pmAv = document.getElementById('pm-avatar');
+          if (pmAv) pmAv.innerHTML = `<img src="${data.bustUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%"><div class="profile-online-dot" id="pm-online-dot"></div>`;
+        }
+
+        // Online status
+        const dot2 = document.getElementById('pm-online-dot');
+        const statusDot = document.getElementById('pm-status-dot');
+        const statusText = document.getElementById('pm-status-text');
+        if (data.online) {
+          if (dot2) dot2.classList.add('visible', ...(data.inGame ? ['ingame'] : []));
+          if (statusDot) statusDot.className = 'profile-status-dot ' + (data.inGame ? 'ingame' : 'online');
+          if (statusText) statusText.textContent = data.inGame ? 'Currently playing Rivals' : 'Online on Roblox';
+        } else {
+          if (statusDot) statusDot.className = 'profile-status-dot';
+          if (statusText) statusText.textContent = data.lastOnline
+            ? 'Last online ' + new Date(data.lastOnline).toLocaleDateString()
+            : 'Offline';
+        }
+
+        // Rivals badges
+        const badgesEl = document.getElementById('pm-badges');
+        if (badgesEl && data.badges?.length) {
+          badgesEl.innerHTML = data.badges
+            .map(b => `<span class="profile-badge-pill" title="${esc(b.description||'')}">${esc(b.name)}</span>`)
+            .join('');
+        }
+      }).catch(e => console.warn('Profile fetch failed:', e));
   }
 
   document.getElementById('profile-overlay').classList.add('open');
@@ -1302,6 +1367,25 @@ document.addEventListener('keydown', function(e) {
       <div class="profile-stat">
         <div class="profile-stat-val" id="pm-wr">—</div>
         <div class="profile-stat-lbl">Win Rate</div>
+      </div>
+    </div>
+    <div class="profile-bio" id="pm-bio"></div>
+    <div class="profile-nosniy-badge" id="pm-nosniy" style="display:none">
+      <div class="dot"></div>
+      <span>Member of Nosniy Games group</span>
+    </div>
+    <div class="profile-extra-stats" id="pm-extra-stats">
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="pm-friends">—</div>
+        <div class="profile-stat-lbl">Friends</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="pm-followers">—</div>
+        <div class="profile-stat-lbl">Followers</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="pm-account-age">—</div>
+        <div class="profile-stat-lbl">Account Age</div>
       </div>
     </div>
     <div class="profile-badges" id="pm-badges"></div>
