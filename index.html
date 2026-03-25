@@ -716,6 +716,7 @@ const TIERS = ['Archnemesis','Nemesis','Onyx','Diamond','Platinum','Gold','Silve
 let S = { season:'Season 1', players:[], activeCategory:'ranked', workerUrl:'https://rivals-proxy.sp-herrick.workers.dev' };
 let pendingAv = null;
 let pendingRobloxId = null;
+let pendingDisplayName = null;
 let fetchDebounce = null;
 
 // ── KV-backed persistence ────────────────────────────────────────
@@ -866,7 +867,8 @@ function renderPublic() {
         <div class="online-dot" id="dot-${p.id}"></div>
       </div>
       <div class="card-name-wrap">
-        <div class="card-name">${esc(p.username)}</div>
+        <div class="card-name">${esc(p.displayName || p.username)}</div>
+              ${p.displayName && p.displayName !== p.username ? `<div style="font-size:12px;color:var(--muted);margin-top:-2px">@${esc(p.username)}</div>` : ''}
         <span class="tier-badge bg-${cls}">${iconEl}<span>${p.tier}</span></span>
         ${p.note ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(p.note)}</div>` : ''}
         <div class="card-badges" id="badges-${p.id}"></div>
@@ -1002,6 +1004,7 @@ function openModal(id) {
     document.getElementById('f-wr').value    = p.winrate != null ? p.winrate : '';
     document.getElementById('f-note').value  = p.note || '';
     pendingRobloxId = p.robloxId || null;
+    pendingDisplayName = p.displayName || null;
     if (p.avatar) { pendingAv = p.avatar; setAvPreview(p.avatar); setAvStatus('Saved avatar', 'ok'); }
     else resetAvPreview(p.username);
   } else {
@@ -1018,6 +1021,7 @@ function closeModal() {
   document.getElementById('modal-ov').classList.remove('open');
   pendingAv = null;
   pendingRobloxId = null;
+  pendingDisplayName = null;
   clearTimeout(fetchDebounce);
 }
 document.getElementById('modal-ov').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
@@ -1036,7 +1040,8 @@ function savePlayer() {
     winrate:  document.getElementById('f-wr').value !== '' ? parseFloat(document.getElementById('f-wr').value) : null,
     note:     document.getElementById('f-note').value.trim(),
     avatar:   pendingAv || null,
-    robloxId: pendingRobloxId || (id ? (S.players.find(x=>x.id===id)||{}).robloxId : null) || null,
+    robloxId:     pendingRobloxId || (id ? (S.players.find(x=>x.id===id)||{}).robloxId : null) || null,
+    displayName:  pendingDisplayName || (id ? (S.players.find(x=>x.id===id)||{}).displayName : null) || null,
   };
   if (id) { const i = S.players.findIndex(x => x.id === id); if (i > -1) S.players[i] = p; }
   else S.players.push(p);
@@ -1129,8 +1134,9 @@ async function fetchAvatar(usernameOverride) {
 
     pendingAv = b64;
     pendingRobloxId = userData.id;
+    pendingDisplayName = userData.displayName || userData.name;
     setAvPreview(b64);
-    setAvStatus(`Fetched: ${userData.name}`, 'ok');
+    setAvStatus(`Fetched: ${userData.displayName || userData.name}`, 'ok');
 
   } catch(e) {
     setAvStatus('Unexpected error: ' + e.message, 'err');
@@ -1204,7 +1210,10 @@ function openProfile(pid) {
   pmAv.style.borderColor = dot;
 
   // Name
-  document.getElementById('pm-name').textContent = p.username || '—';
+  document.getElementById('pm-name').textContent = p.displayName || p.username || '—';
+  // Show @username below if display name is different
+  const pmUser = document.getElementById('pm-username');
+  if (pmUser) pmUser.textContent = (p.displayName && p.displayName !== p.username) ? '@' + p.username : '';
 
   // Rank badge
   const iconEl = WORKER_URL
@@ -1302,6 +1311,7 @@ document.addEventListener('keydown', function(e) {
       <div class="profile-avatar" id="pm-avatar"></div>
       <div class="profile-info">
         <div class="profile-name" id="pm-name"></div>
+        <div style="font-size:13px;color:var(--muted);margin-top:-4px" id="pm-username"></div>
         <div class="profile-rank-badge" id="pm-badge"></div>
         <div class="profile-note" id="pm-note"></div>
         <div class="profile-pos" id="pm-pos"></div>
